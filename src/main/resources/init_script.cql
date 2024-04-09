@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS explorviz.trace_by_hash
 CREATE TABLE IF NOT EXISTS explorviz.trace_by_time
 (
   landscape_token uuid,
+  git_commit_checksum text,
   tenth_second_epoch bigint,
   start_time      bigint,
   end_time        bigint,

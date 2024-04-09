@@ -10,6 +10,7 @@ import java.util.UUID;
 public record Trace(
     UUID landscapeToken,
     String traceId,
+    String gitCommitChecksum,
     long startTime,
     long endTime,
     long duration, // TODO: Pointless?
@@ -21,6 +22,7 @@ public record Trace(
   public static Trace fromRow(final Row row) {
     final UUID landscapeToken = row.getUuid("landscape_token");
     final String traceId = row.getString("trace_id");
+    final String gitCommitChecksum = row.getString("git_commit_checksum");
     // TODO: Remove millisecond/nanosecond mismatch hotfix
     final long startTime = row.getLong("start_time");
     final long endTime = row.getLong("end_time");
@@ -29,7 +31,7 @@ public record Trace(
     final int traceCount = 1;
     final List<Span> spanList = new ArrayList<>();
 
-    return new Trace(landscapeToken, traceId, startTime, endTime, duration, overallRequestCount,
+    return new Trace(landscapeToken, traceId, gitCommitChecksum, startTime, endTime, duration, overallRequestCount,
         traceCount, spanList);
   }
 

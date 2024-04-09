@@ -12,6 +12,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
   @Override
   public PersistenceSpan apply(final Span span) {
     final String landscapeTokenRaw = span.getLandscapeToken();
+    final String gitCommitChecksum = span.getGitCommitChecksum();
     // TODO: Remove invalid UUID hotfix
     UUID landscapeToken = PersistenceSpan.DEFAULT_UUID;
     if (!"mytokenvalue".equals(landscapeTokenRaw)) {
@@ -30,7 +31,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
         HashHelper.calculateSpanHash(landscapeToken, nodeIpAddress, applicationName,
             applicationInstance, methodFqn);
 
-    return new PersistenceSpan(landscapeToken, span.getSpanId(), span.getParentSpanId(),
+    return new PersistenceSpan(landscapeToken, gitCommitChecksum, span.getSpanId(), span.getParentSpanId(),
         span.getTraceId(), startTime, endTime,
         nodeIpAddress, applicationName, applicationLanguage, applicationInstance, methodFqn,
         methodHashCode);

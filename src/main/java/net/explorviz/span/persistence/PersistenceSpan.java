@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record PersistenceSpan(
     UUID landscapeToken,
+    String gitCommitChecksum,
     String spanId,
     String parentSpanId,
     String traceId,

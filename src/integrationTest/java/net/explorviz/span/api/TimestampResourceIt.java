@@ -26,6 +26,8 @@ public class TimestampResourceIt {
   @Inject
   PersistenceSpanProcessor spanProcessor;
 
+  final String gitCommitChecksum = "testGitCommitChecksum";
+
   @Test
   void testLoadAllTimestampsForToken() {
     final long startEarly = 1702545564404L;
@@ -38,7 +40,7 @@ public class TimestampResourceIt {
     final UUID uuidExpected = UUID.randomUUID();
 
     final PersistenceSpan differentTokenSpan =
-        new PersistenceSpan(UUID.randomUUID(), "123L", "",
+        new PersistenceSpan(UUID.randomUUID(), gitCommitChecksum, "123L", "",
             "1L", startEarly, endEarly, "nodeIp", "app-name", "java", 0,
             "net.explorviz.Class.myMethod()", "847");
 
@@ -46,15 +48,15 @@ public class TimestampResourceIt {
     final String otherMethodName = "myOtherMethodName()";
 
     final PersistenceSpan firstOccurenceSpan =
-        new PersistenceSpan(uuidExpected, "123L", "", "1L", startEarly, endEarly,
+        new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "", "1L", startEarly, endEarly,
             "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan secondOccurenceSpan =
-        new PersistenceSpan(uuidExpected, "789L", "", "3L", startLate, endLate,
+        new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "", "3L", startLate, endLate,
             "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan otherSpan =
-        new PersistenceSpan(uuidExpected, "456L", "0L", "", startExpected,
+        new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L", "", startExpected,
             endExpected, "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + otherMethodName,
             "321");
 

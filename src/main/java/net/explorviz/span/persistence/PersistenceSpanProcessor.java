@@ -55,8 +55,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
             + "(landscape_token, method_hash, time_bucket, trace_id) "
             + "VALUES (?, ?, ?, ?)");*/
     this.insertTraceByTimeStatement = session.prepare("INSERT INTO trace_by_time "
-        + "(landscape_token, tenth_second_epoch, start_time, end_time, trace_id) "
-        + "VALUES (?, ?, ?, ?, ?)");
+        + "(landscape_token, git_commit_checksum, tenth_second_epoch, start_time, end_time, trace_id) "
+        + "VALUES (?, ?, ?, ?, ?, ?)");
     this.insertSpanStructureStatement = session.prepare("INSERT INTO span_structure "
         + "(landscape_token, method_hash, node_ip_address, application_name, application_language, "
         + "application_instance, method_fqn, time_seen) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
@@ -168,7 +168,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
 
     final BoundStatement stmtByTime =
-        insertTraceByTimeStatement.bind(span.landscapeToken(), tenSecondBucket,
+        insertTraceByTimeStatement.bind(span.landscapeToken(), span.gitCommitChecksum(), tenSecondBucket,
             span.startTime(), span.endTime(), span.traceId());
 
     session.executeAsync(stmtByTime).whenComplete((result, failure) -> {

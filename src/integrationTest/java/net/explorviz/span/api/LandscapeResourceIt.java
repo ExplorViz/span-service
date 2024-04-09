@@ -7,6 +7,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import jakarta.inject.Inject;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import net.explorviz.span.kafka.KafkaTestResource;
@@ -14,6 +15,7 @@ import net.explorviz.span.landscape.Landscape;
 import net.explorviz.span.landscape.Method;
 import net.explorviz.span.persistence.PersistenceSpan;
 import net.explorviz.span.persistence.PersistenceSpanProcessor;
+import net.explorviz.span.trace.Trace;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +26,8 @@ public class LandscapeResourceIt {
 
   @Inject
   PersistenceSpanProcessor spanProcessor;
+
+  final String gitCommitChecksum = "testGitCommitChecksum";
 
   @Test
   void testLoadAllStructureSpans() {
@@ -37,21 +41,21 @@ public class LandscapeResourceIt {
     final UUID uuidExpected = UUID.randomUUID();
 
     final PersistenceSpan differentTokenSpan = new PersistenceSpan(
-        UUID.randomUUID(), "123L", "", "1L", startEarly,
+        UUID.randomUUID(), gitCommitChecksum, "123L", "", "1L", startEarly,
         endEarly, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
-    final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected,
+    final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "123L", "", "1L", startEarly, endEarly, "nodeIp", "app-name", "java", 0,
         "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected,
+    final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "789L", "", "3L", startLate, endLate, "nodeIp", "app-name", "java", 0,
         "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, "456L",
+    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L",
         "0L", "", startExpected, endExpected, "nodeIp", "app-name", "java", 0,
         "net.explorviz.Class." + otherMethodName, "321");
 
@@ -85,21 +89,21 @@ public class LandscapeResourceIt {
     final UUID uuidExpected = UUID.randomUUID();
 
     final PersistenceSpan differentTokenSpan = new PersistenceSpan(
-        UUID.randomUUID(), "123L", "", "1L", startEarly,
+        UUID.randomUUID(), gitCommitChecksum, "123L", "", "1L", startEarly,
         endEarly, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
-    final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected,
+    final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "123L", "", "1L", startEarly, endEarly, "nodeIp", "app-name", "java", 0,
         "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected,
+    final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "789L", "", "3L", startLate, endLate, "nodeIp", "app-name", "java", 0,
         "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, "456L",
+    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L",
         "", "2L", startExpected, endExpected, "nodeIp", "app-name", "java", 0,
         "net.explorviz.Class." + otherMethodName, "321");
 
@@ -122,6 +126,56 @@ public class LandscapeResourceIt {
 
     Assertions.assertEquals(1, resultMethodList.size());
     Assertions.assertEquals(otherMethodName, resultMethodList.get(0).name());
+  }
+
+  @Test
+  void testLoadTracesByTimeRange() {
+    final long startEarly = 1701081837000L;
+    final long endEarly = 1701081838000L;
+    final long startExpected = 1701081840000L;
+    final long endExpected = 1701081841000L;
+    final long startLate = 1701081843000L;
+    final long endLate = 1701081844000L;
+
+    final UUID uuidExpected = UUID.randomUUID();
+
+    final PersistenceSpan differentTokenSpan = new PersistenceSpan(
+        UUID.randomUUID(), gitCommitChecksum, "123L", "", "1L", startEarly,
+        endEarly, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()", "847");
+
+    final String duplicateMethodName = "myMethodName()";
+    final String otherMethodName = "myOtherMethodName()";
+
+    final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
+        "123L", "", "1L", startEarly, endEarly, "nodeIp", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
+
+    final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
+        "789L", "", "3L", startLate, endLate, "nodeIp", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
+
+    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L",
+        "", "2L", startExpected, endExpected, "nodeIp", "app-name", "java", 0,
+        "net.explorviz.Class." + otherMethodName, "321");
+
+    spanProcessor.accept(differentTokenSpan);
+    spanProcessor.accept(firstOccurenceSpan);
+    spanProcessor.accept(secondOccurenceSpan);
+    spanProcessor.accept(otherSpan);
+
+    final long from = startExpected;
+    final long to = endExpected;
+
+    final Response response = given().pathParam("token", uuidExpected)
+        .queryParam("from", from).queryParam("to", to).when()
+        .get("/v2/landscapes/{token}/dynamic");
+
+    final Trace[] result = response.getBody().as(Trace[].class);
+
+
+    // ATTENTION: For the moment, we only filter based on the starting point of traces
+    Assertions.assertEquals(2, result.length);
+    Assertions.assertEquals(gitCommitChecksum, result[0].gitCommitChecksum());
   }
 
 }
