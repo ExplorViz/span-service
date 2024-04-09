@@ -2,9 +2,7 @@ package net.explorviz.span.trace;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public record Trace(
@@ -31,7 +29,8 @@ public record Trace(
     final int traceCount = 1;
     final List<Span> spanList = new ArrayList<>();
 
-    return new Trace(landscapeToken, traceId, gitCommitChecksum, startTime, endTime, duration, overallRequestCount,
+    return new Trace(landscapeToken, traceId, gitCommitChecksum, startTime, endTime, duration,
+        overallRequestCount,
         traceCount, spanList);
   }
 

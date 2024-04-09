@@ -31,7 +31,8 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
         HashHelper.calculateSpanHash(landscapeToken, nodeIpAddress, applicationName,
             applicationInstance, methodFqn);
 
-    return new PersistenceSpan(landscapeToken, gitCommitChecksum, span.getSpanId(), span.getParentSpanId(),
+    return new PersistenceSpan(landscapeToken, gitCommitChecksum, span.getSpanId(),
+        span.getParentSpanId(),
         span.getTraceId(), startTime, endTime,
         nodeIpAddress, applicationName, applicationLanguage, applicationInstance, methodFqn,
         methodHashCode);
