@@ -68,6 +68,8 @@ public class TimestampResourceIt {
     final Response response = given().pathParam("token", uuidExpected).when()
         .get("/v2/landscapes/{token}/timestamps");
 
+    System.out.println("ALEX HIER: " + response.getBody().asPrettyString());
+
     final List<Timestamp> resultList = response.getBody().as(new TypeRef<List<Timestamp>>() {
     });
 

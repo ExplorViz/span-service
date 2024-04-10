@@ -38,6 +38,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private final PreparedStatement insertTraceByTimeStatement;
   private final PreparedStatement insertSpanStructureStatement;
   private final PreparedStatement updateSpanBucketCounter;
+  private final PreparedStatement updateSpanBucketCounterForCommits;
+
 
   @Inject
   public PersistenceSpanProcessor(final QuarkusCqlSession session) {
@@ -65,6 +67,9 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     this.updateSpanBucketCounter = session.prepare("UPDATE "
         + "span_count_per_time_bucket_and_token SET span_count = span_count + 1 "
         + "WHERE landscape_token = ? AND tenth_second_epoch = ?");
+    this.updateSpanBucketCounterForCommits = session.prepare("UPDATE "
+        + "span_count_for_token_and_commit_and_time_bucket SET span_count = span_count + 1 "
+        + "WHERE landscape_token = ? AND git_commit_checksum = ? AND tenth_second_epoch = ?");
   }
 
   @Override
@@ -94,8 +99,15 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private void updateSpanBucketCounter(final PersistenceSpan span) {
     final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
 
-    final BoundStatement updateStmt =
+    BoundStatement updateStmt =
         this.updateSpanBucketCounter.bind(span.landscapeToken(), tenSecondBucket);
+
+    this.session.executeAsync(updateStmt);
+
+    updateStmt =
+        this.updateSpanBucketCounterForCommits.bind(span.landscapeToken(), span.gitCommitChecksum(),
+            tenSecondBucket
+        );
 
     this.session.executeAsync(updateStmt);
   }
