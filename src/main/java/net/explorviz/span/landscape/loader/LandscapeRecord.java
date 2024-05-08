@@ -9,6 +9,7 @@ public record LandscapeRecord(
     UUID landscapeToken,
     String methodHash,
     String nodeIpAddress,
+    String hostName,
     String applicationName,
     String applicationLanguage,
     int applicationInstance,
@@ -22,6 +23,7 @@ public record LandscapeRecord(
     final UUID landscapeToken = row.getUuid("landscape_token");
     final String methodHash = row.getString("method_hash");
     final String nodeIpAddress = row.getString("node_ip_address");
+    final String hostName = row.getString("host_name");
     final String applicationName = row.getString("application_name");
     final String applicationLanguage = row.getString("application_language");
     final int applicationInstance = row.getInt("application_instance");
@@ -40,7 +42,7 @@ public record LandscapeRecord(
     final String className = operationFqnSplit[operationFqnSplit.length - 2];
     final String methodName = operationFqnSplit[operationFqnSplit.length - 1];
 
-    return new LandscapeRecord(landscapeToken, methodHash, nodeIpAddress, applicationName,
+    return new LandscapeRecord(landscapeToken, methodHash, nodeIpAddress, hostName, applicationName,
         applicationLanguage, applicationInstance, packageName, className, methodName, timeSeen);
   }
 }

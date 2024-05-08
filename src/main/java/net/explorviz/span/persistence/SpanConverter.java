@@ -22,6 +22,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     final long startTime = span.getStartTimeEpochMilli();
     final long endTime = span.getEndTimeEpochMilli();
     final String nodeIpAddress = span.getHostIpAddress();
+    final String nodeHostName = span.getHostname();
     final String applicationName = span.getAppName();
     final int applicationInstance = Integer.parseInt(span.getAppInstanceId());
     final String applicationLanguage = span.getAppLanguage();
@@ -34,7 +35,8 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     return new PersistenceSpan(landscapeToken, gitCommitChecksum, span.getSpanId(),
         span.getParentSpanId(),
         span.getTraceId(), startTime, endTime,
-        nodeIpAddress, applicationName, applicationLanguage, applicationInstance, methodFqn,
+        nodeIpAddress, applicationName, applicationLanguage, nodeHostName, applicationInstance,
+        methodFqn,
         methodHashCode);
   }
 }

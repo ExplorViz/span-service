@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS explorviz.span_structure
   landscape_token      uuid,
   method_hash          text,
   node_ip_address      text,
+  host_name            text,
   application_name     text,
   application_language text,
   application_instance int,

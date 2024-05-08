@@ -61,9 +61,9 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         + "start_time, end_time, trace_id) "
         + "VALUES (?, ?, ?, ?, ?, ?)");
     this.insertSpanStructureStatement = session.prepare("INSERT INTO span_structure "
-        + "(landscape_token, method_hash, node_ip_address, application_name, application_language, "
-        + "application_instance, method_fqn, time_seen) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
-        + "USING TIMESTAMP ?");
+        + "(landscape_token, method_hash, node_ip_address, host_name, application_name, "
+        + "application_language, application_instance, method_fqn, time_seen) "
+        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP ?");
     this.updateSpanBucketCounter = session.prepare("UPDATE "
         + "span_count_per_time_bucket_and_token SET span_count = span_count + 1 "
         + "WHERE landscape_token = ? AND tenth_second_epoch = ?");
@@ -116,7 +116,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private void insertSpanStructure(final PersistenceSpan span) {
     final BoundStatement stmtStructure =
         insertSpanStructureStatement.bind(span.landscapeToken(), span.methodHash(),
-            span.nodeIpAddress(), span.applicationName(), span.applicationLanguage(),
+            span.nodeIpAddress(), span.hostName(), span.applicationName(),
+            span.applicationLanguage(),
             span.applicationInstance(), span.methodFqn(), span.startTime(),
             Instant.now().toEpochMilli());
 

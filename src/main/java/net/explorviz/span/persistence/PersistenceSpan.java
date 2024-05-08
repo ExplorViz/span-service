@@ -11,6 +11,7 @@ public record PersistenceSpan(
     long startTime,
     long endTime,
     String nodeIpAddress, // TODO: Convert into InetAddress type?
+    String hostName,
     String applicationName,
     String applicationLanguage,
     int applicationInstance,

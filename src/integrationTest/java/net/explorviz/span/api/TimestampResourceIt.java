@@ -43,7 +43,7 @@ public class TimestampResourceIt {
 
     final PersistenceSpan firstSpanOfFirstBucket =
         new PersistenceSpan(UUID.randomUUID(), gitCommitChecksum, "123L", "",
-            "1L", startEarly, endEarly, "nodeIp", "app-name", "java", 0,
+            "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", 0,
             "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
@@ -51,15 +51,18 @@ public class TimestampResourceIt {
 
     final PersistenceSpan firstSpanOfSecondBuckec =
         new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "", "1L", startEarly, endEarly,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan firstSpanOfThirdBucket =
         new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "", "3L", startLate, endLate,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan secondSpanOfSecondBucket =
         new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L", "", startExpected,
-            endExpected, "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + otherMethodName,
+            endExpected, "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + otherMethodName,
             "321");
 
     spanProcessor.accept(firstSpanOfFirstBucket);
@@ -113,7 +116,7 @@ public class TimestampResourceIt {
 
     final PersistenceSpan firstSpanOfFirstBucket =
         new PersistenceSpan(uuidExpected, gitCommitChecksum, "0123L", "",
-            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "app-name", "java", 0,
+            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
             "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
@@ -122,16 +125,18 @@ public class TimestampResourceIt {
     final PersistenceSpan firstSpanOfSecondBuckec =
         new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "", "1L", secondBucketStart,
             secondBucketEnd,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan firstSpanOfThirdBucket =
         new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "", "3L", thirdBucketStart,
             thirdBucketEnd,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan secondSpanOfSecondBucket =
         new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L", "", secondBucketStart,
-            secondBucketEnd, "nodeIp", "app-name", "java", 0,
+            secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
             "net.explorviz.Class." + otherMethodName,
             "321");
 
@@ -176,7 +181,7 @@ public class TimestampResourceIt {
 
     final PersistenceSpan firstSpanOfFirstBucket =
         new PersistenceSpan(uuidExpected, "notTestCommit-1", "0123L", "",
-            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "app-name", "java", 0,
+            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
             "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
@@ -185,16 +190,18 @@ public class TimestampResourceIt {
     final PersistenceSpan firstSpanOfSecondBuckec =
         new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L", secondBucketStart,
             secondBucketEnd,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan firstSpanOfThirdBucket =
         new PersistenceSpan(uuidExpected, "notTestCommit-2", "789L", "", "3L", thirdBucketStart,
             thirdBucketEnd,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan secondSpanOfSecondBucket =
         new PersistenceSpan(uuidExpected, "notTestCommit-2", "456L", "0L", "", secondBucketStart,
-            secondBucketEnd, "nodeIp", "app-name", "java", 0,
+            secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
             "net.explorviz.Class." + otherMethodName,
             "321");
 
@@ -235,7 +242,7 @@ public class TimestampResourceIt {
 
     final PersistenceSpan firstSpanOfFirstBucket =
         new PersistenceSpan(uuidExpected, expectedCommit, "0123L", "",
-            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "app-name", "java", 0,
+            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
             "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
@@ -244,17 +251,19 @@ public class TimestampResourceIt {
     final PersistenceSpan firstSpanOfSecondBuckec =
         new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L", secondBucketStart,
             secondBucketEnd,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan firstSpanOfThirdBucket =
         new PersistenceSpan(uuidExpected, expectedCommit, "789L", "", "3L", thirdBucketStart,
             thirdBucketEnd,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class." + duplicateMethodName, "847");
 
     final PersistenceSpan secondSpanOfSecondBucket =
         new PersistenceSpan(uuidExpected, expectedCommit, "456L", "0L", "",
             secondBucketStart + 1000,
-            secondBucketEnd + 1000, "nodeIp", "app-name", "java", 0,
+            secondBucketEnd + 1000, "nodeIp", "host-name", "app-name", "java", 0,
             "net.explorviz.Class." + otherMethodName,
             "321");
 
@@ -287,8 +296,8 @@ public class TimestampResourceIt {
   private void testResultListAgainstExpectedValues(final List<Timestamp> resultList,
       final Map<Long, Integer> expectedValuesMap) {
     for (Map.Entry<Long, Integer> entry : expectedValuesMap.entrySet()) {
-      long key = entry.getKey().longValue();
-      int value = entry.getValue().intValue();
+      long key = entry.getKey();
+      int value = entry.getValue();
 
       Optional<Timestamp> optionalTimestamp =
           resultList.stream().filter(timestamp -> timestamp.epochMilli() == key)

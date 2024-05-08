@@ -45,17 +45,19 @@ public class TraceLoaderIt {
 
     final PersistenceSpan earlySpan =
         new PersistenceSpan(landscapeToken, gitCommitChecksum, "123L", "", "1L", startEarly,
-            endEarly, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+            endEarly, "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class.myMethod()",
             "847");
 
     final PersistenceSpan expectedSpan =
-        new PersistenceSpan(landscapeToken, gitCommitChecksum,"456L", "", "2L", startExpected,
-            endExpected, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        new PersistenceSpan(landscapeToken, gitCommitChecksum, "456L", "", "2L", startExpected,
+            endExpected, "nodeIp", "host-name", "app-name", "java", 0,
+            "net.explorviz.Class.myMethod()",
             "847");
 
     final PersistenceSpan lateSpan =
-        new PersistenceSpan(landscapeToken, gitCommitChecksum,"789L", "", "3L", startLate,
-            endLate, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        new PersistenceSpan(landscapeToken, gitCommitChecksum, "789L", "", "3L", startLate,
+            endLate, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
             "847");
 
     spanProcessor.accept(earlySpan);
@@ -67,7 +69,8 @@ public class TraceLoaderIt {
             .await().indefinitely();
 
     Assertions.assertEquals(1, result.size(), "List of traces has wrong size.");
-    Assertions.assertEquals(9, result.get(0).getClass().getDeclaredFields().length, "Trace has wrong number of fields.");
+    Assertions.assertEquals(9, result.get(0).getClass().getDeclaredFields().length,
+        "Trace has wrong number of fields.");
     Assertions.assertEquals(1, result.get(0).spanList().size(), "List of spans has wrong size.");
     Assertions.assertEquals(convertPersistenceSpanToSpan(expectedSpan),
         result.get(0).spanList().get(0), "Wrong span in trace.");

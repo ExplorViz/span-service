@@ -4,7 +4,7 @@ import java.util.List;
 
 public record Node(
     String ipAddress,
-    // TODO: Deviation from frontend, missing `String hostName`
+    String hostName,
     List<Application> applications
 ) {
 
