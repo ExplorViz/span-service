@@ -35,7 +35,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     return new PersistenceSpan(landscapeToken, gitCommitChecksum, span.getSpanId(),
         span.getParentSpanId(),
         span.getTraceId(), startTime, endTime,
-        nodeIpAddress, applicationName, applicationLanguage, nodeHostName, applicationInstance,
+        nodeIpAddress, nodeHostName, applicationName, applicationLanguage, applicationInstance,
         methodFqn,
         methodHashCode);
   }
