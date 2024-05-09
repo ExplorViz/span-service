@@ -10,6 +10,7 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.UUID;
 import net.explorviz.span.kafka.KafkaTestResource;
+import net.explorviz.span.landscape.Application;
 import net.explorviz.span.landscape.Landscape;
 import net.explorviz.span.landscape.Method;
 import net.explorviz.span.landscape.Node;
@@ -74,8 +75,16 @@ public class LandscapeResourceIt {
 
     Assertions.assertEquals(1, node.size());
     Assertions.assertEquals("host-name", node.get(0).hostName());
+    Assertions.assertEquals("nodeIp", node.get(0).ipAddress());
 
-    final List<Method> resultMethodList = result.nodes().get(0).applications().get(0).packages()
+    final List<Application> applications = result.nodes().get(0).applications();
+
+    Assertions.assertEquals(1, applications.size());
+    Assertions.assertEquals("app-name", applications.get(0).name());
+    Assertions.assertEquals("java", applications.get(0).language());
+    Assertions.assertEquals(0, applications.get(0).instanceId());
+
+    final List<Method> resultMethodList = applications.get(0).packages()
         .get(0).subPackages().get(0).classes().get(0).methods();
 
     Assertions.assertEquals(2, resultMethodList.size());
