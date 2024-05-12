@@ -46,7 +46,6 @@ public class TimestampLoader {
 
   public Multi<Timestamp> loadAllTimestampsForToken(final UUID landscapeToken,
       final Optional<String> commit) {
-    System.out.println("ALEX DA: " + commit.orElse("all-commits") + " " + commit.isPresent());
     LOGGER.atTrace().addArgument(landscapeToken).addArgument(commit.orElse("all-commits"))
         .log("Loading all timestamps for token {} and commit {}");
 

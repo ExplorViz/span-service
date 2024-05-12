@@ -23,8 +23,13 @@ public class TimestampResource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TimestampResource.class);
 
-  @Inject
+
   TimestampLoader timestampLoader;
+
+  @Inject
+  public TimestampResource(final TimestampLoader timestampLoader) {
+    this.timestampLoader = timestampLoader;
+  }
 
   @GET
   @Path("/{token}/timestamps")
@@ -32,7 +37,7 @@ public class TimestampResource {
       @QueryParam("newest") final long newest, @QueryParam("oldest") final long oldest,
       @QueryParam("commit") final Optional<String> commit) {
     LOGGER.atInfo().addArgument(token).addArgument(commit.orElse("all-commits"))
-        .log("Loading all timestamps for token {} and commit {}");
+        .addArgument(newest).log("Loading timestamps for token {}, commit {}, and from epoch {}");
 
     if (newest == 0 && oldest == 0) {
       return this.timestampLoader.loadAllTimestampsForToken(parseUuid(token), commit);
