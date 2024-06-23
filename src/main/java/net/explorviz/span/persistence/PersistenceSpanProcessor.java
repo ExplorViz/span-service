@@ -179,7 +179,6 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         lastSavedTraces.incrementAndGet();
         LOGGER.atTrace().addArgument(span::landscapeToken).addArgument(span::traceId)
             .addArgument(tenSecondBucket)
-            .addArgument(span::traceId)
             .log("Saved new trace with token={}, trace_id={}, and ten second epoch bucket={}");
       } else {
         lastFailures.incrementAndGet();
