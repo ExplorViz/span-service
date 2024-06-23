@@ -75,5 +75,9 @@ CREATE TABLE IF NOT EXISTS explorviz.span_structure
   application_instance int,
   method_fqn           text,
   time_seen            bigint,
+  k8s_pod_name         text,
+  k8s_node_name        text,
+  k8s_namespace        text,
+  k8s_deployment_name  text,
   PRIMARY KEY ((landscape_token), method_hash)
 );

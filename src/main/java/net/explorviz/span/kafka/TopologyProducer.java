@@ -48,6 +48,10 @@ public class TopologyProducer {
     final KStream<String, Span> spanStream = builder.stream(this.inTopic,
         Consumed.with(Serdes.String(), this.spanSerde));
 
+    spanStream.foreach((token, span) -> {
+      final var a = 1;
+    });
+
     spanStream.foreach((token, span) -> this.lastReceivedSpans.incrementAndGet());
 
     if (LOGGER.isTraceEnabled()) {

@@ -14,7 +14,11 @@ public record PersistenceSpan(
     String applicationLanguage,
     int applicationInstance,
     String methodFqn,
-    String methodHash
+    String methodHash,
+    String k8sPodName,
+    String k8sNodeName,
+    String k8sNamespace,
+    String k8sDeploymentName
 ) {
 
   public static final UUID DEFAULT_UUID = UUID.fromString("7cd8a9a7-b840-4735-9ef0-2dbbfa01c039");

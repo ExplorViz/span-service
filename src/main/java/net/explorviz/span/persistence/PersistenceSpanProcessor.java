@@ -59,7 +59,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         + "VALUES (?, ?, ?, ?, ?)");
     this.insertSpanStructureStatement = session.prepare("INSERT INTO span_structure "
         + "(landscape_token, method_hash, node_ip_address, application_name, application_language, "
-        + "application_instance, method_fqn, time_seen) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+        + "application_instance, method_fqn, time_seen, k8s_pod_name, k8s_node_name, k8s_namespace, k8s_deployment_name) "
+        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         + "USING TIMESTAMP ?");
     this.updateSpanBucketCounter = session.prepare("UPDATE span_count_per_time_bucket_and_token "
         + "SET span_count = span_count + 1 "
@@ -105,6 +106,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         insertSpanStructureStatement.bind(span.landscapeToken(), span.methodHash(),
             span.nodeIpAddress(), span.applicationName(), span.applicationLanguage(),
             span.applicationInstance(), span.methodFqn(), span.startTime(),
+            span.k8sPodName(), span.k8sNodeName(), span.k8sNamespace(), span.k8sDeploymentName(),
             Instant.now().toEpochMilli());
 
     session.executeAsync(stmtStructure).whenComplete((result, failure) -> {
