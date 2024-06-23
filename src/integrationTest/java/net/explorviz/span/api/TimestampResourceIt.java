@@ -40,23 +40,26 @@ public class TimestampResourceIt {
     final PersistenceSpan differentTokenSpan =
         new PersistenceSpan(UUID.randomUUID(), "123L", "",
             "1L", startEarly, endEarly, "nodeIp", "app-name", "java", 0,
-            "net.explorviz.Class.myMethod()", "847");
+            "net.explorviz.Class.myMethod()", "847",
+            "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
     final PersistenceSpan firstOccurenceSpan =
         new PersistenceSpan(uuidExpected, "123L", "", "1L", startEarly, endEarly,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847",
+            "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan secondOccurenceSpan =
         new PersistenceSpan(uuidExpected, "789L", "", "3L", startLate, endLate,
-            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847");
+            "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847",
+            "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan otherSpan =
         new PersistenceSpan(uuidExpected, "456L", "0L", "", startExpected,
             endExpected, "nodeIp", "app-name", "java", 0, "net.explorviz.Class." + otherMethodName,
-            "321");
+            "321", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     spanProcessor.accept(differentTokenSpan);
     spanProcessor.accept(firstOccurenceSpan);

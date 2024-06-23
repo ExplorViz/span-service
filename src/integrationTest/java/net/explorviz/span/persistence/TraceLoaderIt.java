@@ -44,17 +44,17 @@ public class TraceLoaderIt {
     final PersistenceSpan earlySpan =
         new PersistenceSpan(landscapeToken, "123L", "", "1L", startEarly,
             endEarly, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
-            "847");
+            "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan expectedSpan =
         new PersistenceSpan(landscapeToken, "456L", "", "2L", startExpected,
             endExpected, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
-            "847");
+            "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan lateSpan =
         new PersistenceSpan(landscapeToken, "789L", "", "3L", startLate,
             endLate, "nodeIp", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
-            "847");
+            "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     spanProcessor.accept(earlySpan);
     spanProcessor.accept(expectedSpan);
