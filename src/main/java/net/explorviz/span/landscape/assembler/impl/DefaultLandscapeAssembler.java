@@ -1,9 +1,12 @@
 package net.explorviz.span.landscape.assembler.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import net.explorviz.span.landscape.Application;
 import net.explorviz.span.landscape.Class;
 import net.explorviz.span.landscape.K8sDeployment;

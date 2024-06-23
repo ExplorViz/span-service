@@ -59,7 +59,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         + "VALUES (?, ?, ?, ?, ?)");
     this.insertSpanStructureStatement = session.prepare("INSERT INTO span_structure "
         + "(landscape_token, method_hash, node_ip_address, application_name, application_language, "
-        + "application_instance, method_fqn, time_seen, k8s_pod_name, k8s_node_name, k8s_namespace, k8s_deployment_name) "
+        + "application_instance, method_fqn, time_seen, " 
+        + "k8s_pod_name, k8s_node_name, k8s_namespace, k8s_deployment_name) "
         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         + "USING TIMESTAMP ?");
     this.updateSpanBucketCounter = session.prepare("UPDATE span_count_per_time_bucket_and_token "
