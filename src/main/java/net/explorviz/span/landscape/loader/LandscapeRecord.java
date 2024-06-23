@@ -15,6 +15,10 @@ public record LandscapeRecord(
     String packageName,
     String className,
     String methodName,
+    String k8sPodName,
+    String k8sNodeName,
+    String k8sNamespace,
+    String k8sDeploymentName,
     long timeSeen
 ) {
 
@@ -27,6 +31,11 @@ public record LandscapeRecord(
     final int applicationInstance = row.getInt("application_instance");
     final String methodFqn = row.getString("method_fqn");
     final long timeSeen = row.getLong("time_seen");
+    final String k8sPodName = row.getString("k8s_pod_name");
+    final String k8sNodeName = row.getString("k8s_node_name");
+    final String k8sNamespace = row.getString("k8s_namespace");
+    final String k8sDeploymentName = row.getString("k8s_deployment_name");
+
 
     // TODO: Error handling
     /*
@@ -41,6 +50,7 @@ public record LandscapeRecord(
     final String methodName = operationFqnSplit[operationFqnSplit.length - 1];
 
     return new LandscapeRecord(landscapeToken, methodHash, nodeIpAddress, applicationName,
-        applicationLanguage, applicationInstance, packageName, className, methodName, timeSeen);
+        applicationLanguage, applicationInstance, packageName, className, methodName, k8sPodName,
+        k8sNodeName, k8sNamespace, k8sDeploymentName, timeSeen);
   }
 }

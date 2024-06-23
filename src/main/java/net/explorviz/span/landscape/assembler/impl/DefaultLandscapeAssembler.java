@@ -1,13 +1,15 @@
 package net.explorviz.span.landscape.assembler.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.util.*;
+
 import net.explorviz.span.landscape.Application;
 import net.explorviz.span.landscape.Class;
+import net.explorviz.span.landscape.K8sDeployment;
+import net.explorviz.span.landscape.K8sNamespace;
+import net.explorviz.span.landscape.K8sNode;
+import net.explorviz.span.landscape.K8sPod;
 import net.explorviz.span.landscape.Landscape;
 import net.explorviz.span.landscape.Method;
 import net.explorviz.span.landscape.Node;
@@ -27,7 +29,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
         records.stream().findFirst().orElseThrow(NoRecordsException::new).landscapeToken();
 
     // Create empty landscape and insert all records
-    final Landscape landscape = new Landscape(token, new ArrayList<>());
+    final Landscape landscape = new Landscape(token, new ArrayList<>(), new ArrayList<>());
 
     this.insertAll(landscape, records);
     return landscape;
@@ -43,8 +45,11 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
     }
 
     for (final LandscapeRecord record : records) {
-      final Node node = getNodeForRecord(landscape, record);
-      final Application app = getApplicationForRecord(record, node);
+      final Optional<K8sConstructs> k8sConstructs = getK8sConstructsForRecord(record, landscape);
+      final Node node = k8sConstructs.isEmpty() ? getNodeForRecord(landscape, record) : null;
+      final Application app =
+          k8sConstructs.isEmpty() ? getApplicationForRecord(record, node) : k8sConstructs.get()
+              .app();
       final String[] packages = getPackagesForRecord(record, app);
       final Package leafPkg = PackageHelper.fromPath(app, packages);
       final Class cls = getClassForRecord(record, leafPkg);
@@ -70,6 +75,72 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
     }
 
     return node;
+  }
+
+  private record K8sConstructs(
+      K8sPod pod,
+      K8sNode node,
+      K8sNamespace namespace,
+      K8sDeployment deployment,
+      Application app
+  ) {
+  }
+
+  private Optional<K8sConstructs> getK8sConstructsForRecord(final LandscapeRecord record,
+      final Landscape landscape) {
+    final var podName = record.k8sPodName();
+    final var nodeName = record.k8sNodeName();
+    final var namespaceName = record.k8sNamespace();
+    final var deploymentName = record.k8sDeploymentName();
+
+    if (record.k8sPodName() == null || record.k8sPodName().isEmpty()) {
+      return Optional.empty();
+    }
+
+    var node = landscape.k8sNodes().stream().filter(n -> Objects.equals(n.name(), nodeName))
+        .findFirst().orElse(null);
+    if (node == null) {
+      node = new K8sNode(nodeName, new ArrayList<>());
+      landscape.k8sNodes().add(node);
+    }
+
+    var namespace =
+        node.k8sNamespaces().stream().filter(n -> Objects.equals(n.name(), namespaceName))
+            .findFirst().orElse(null);
+    if (namespace == null) {
+      namespace = new K8sNamespace(namespaceName, new ArrayList<>());
+      node.k8sNamespaces().add(namespace);
+    }
+
+    var deployment = namespace.k8sDeployments().stream()
+        .filter(d -> Objects.equals(d.name(), deploymentName)).findFirst().orElse(null);
+    if (deployment == null) {
+      deployment = new K8sDeployment(deploymentName, new ArrayList<>());
+      namespace.k8sDeployments().add(deployment);
+    }
+
+    var pod = deployment.k8sPods().stream().filter(p -> Objects.equals(p.name(), podName))
+        .findFirst().orElse(null);
+    if (pod == null) {
+      pod = new K8sPod(podName, new ArrayList<>());
+      deployment.k8sPods().add(pod);
+    }
+
+
+    final String applicationName = record.applicationName();
+    final int applicationInstance = record.applicationInstance();
+    final String applicationLanguage = record.applicationLanguage();
+    var app = pod.applications().stream()
+        .filter(
+            a -> Objects.equals(a.name(), applicationName) && a.instance() == applicationInstance)
+        .findFirst().orElse(null);
+    if (app == null) {
+      app = new Application(applicationName, applicationLanguage, applicationInstance,
+          new ArrayList<>());
+      pod.applications().add(app);
+    }
+
+    return Optional.of(new K8sConstructs(pod, node, namespace, deployment, app));
   }
 
   private Application getApplicationForRecord(final LandscapeRecord record, final Node node) {
