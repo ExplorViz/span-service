@@ -14,14 +14,15 @@ public final class HashHelper {
   }
 
   public static String calculateSpanHash(final UUID landscapeToken, final String nodeIpAddress,
-      final String applicationName, final int applicationInstance, final String methodFqn) {
+      final String applicationName, final String applicationInstance, final String methodFqn) {
     final HighwayHash hash = new HighwayHash(HIGHWAY_HASH_KEY);
 
     // TODO: Fill with IPv6 address bits (Convert IPv4 to IPv4-in-IPv6 representation)
     hash.update(landscapeToken.getMostSignificantBits(), landscapeToken.getLeastSignificantBits(),
-        applicationInstance, 0L);
+        0L, 0L);
 
-    final String builder = applicationName + ';' + nodeIpAddress + ';' + methodFqn;
+    final String builder =  nodeIpAddress + ';' + applicationName + ';' + applicationInstance
+        + ';' + methodFqn;
     final byte[] bytes = builder.getBytes(StandardCharsets.UTF_8);
     int position = 0;
     for (; bytes.length - position >= 32; position += 32) {

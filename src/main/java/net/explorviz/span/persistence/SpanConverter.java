@@ -22,7 +22,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     final long endTime = span.getEndTimeEpochMilli();
     final String nodeIpAddress = span.getHostIpAddress();
     final String applicationName = span.getAppName();
-    final int applicationInstance = Integer.parseInt(span.getAppInstanceId());
+    final String applicationInstance = span.getAppInstanceId();
     final String applicationLanguage = span.getAppLanguage();
     final String methodFqn = span.getFullyQualifiedOperationName();
 

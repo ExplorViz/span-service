@@ -12,7 +12,7 @@ public record PersistenceSpan(
     String nodeIpAddress, // TODO: Convert into InetAddress type?
     String applicationName,
     String applicationLanguage,
-    int applicationInstance,
+    String applicationInstance,
     String methodFqn,
     String methodHash
 ) {

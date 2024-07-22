@@ -77,7 +77,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
 
     // Find application in node or insert new
     final String applicationName = record.applicationName();
-    final int applicationInstance = record.applicationInstance();
+    final String applicationInstance = record.applicationInstance();
     final String applicationLanguage = record.applicationLanguage();
     final Optional<Application> foundApp =
         AssemblyUtils.findApplication(node, applicationName, applicationInstance);

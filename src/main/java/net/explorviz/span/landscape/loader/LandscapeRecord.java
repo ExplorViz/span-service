@@ -11,7 +11,7 @@ public record LandscapeRecord(
     String nodeIpAddress,
     String applicationName,
     String applicationLanguage,
-    int applicationInstance,
+    String applicationInstance,
     String packageName,
     String className,
     String methodName,
@@ -24,7 +24,7 @@ public record LandscapeRecord(
     final String nodeIpAddress = row.getString("node_ip_address");
     final String applicationName = row.getString("application_name");
     final String applicationLanguage = row.getString("application_language");
-    final int applicationInstance = row.getInt("application_instance");
+    final String applicationInstance = row.getString("application_instance");
     final String methodFqn = row.getString("method_fqn");
     final long timeSeen = row.getLong("time_seen");
 
