@@ -24,6 +24,7 @@ public class LandscapeLoader {
 
   private final PreparedStatement selectSpanStructure;
   private final PreparedStatement selectSpanStructureByTime;
+  private final PreparedStatement clearSpanStructure;
 
   @Inject
   public LandscapeLoader(final QuarkusCqlSession session) {
@@ -38,6 +39,9 @@ public class LandscapeLoader {
         + "AND time_seen >= ? "
         + "AND time_seen <= ? "
         + "ALLOW FILTERING");
+    this.clearSpanStructure = session.prepare("DELETE * "
+        + "FROM span_structure "
+        + "WHERE landscape_token = ?");
   }
 
   public Multi<LandscapeRecord> loadLandscape(final UUID landscapeToken) {
@@ -60,6 +64,13 @@ public class LandscapeLoader {
         to
     );
     return executeQuery(stmtSelectByTime);
+  }
+
+  public void clearLandscape(final UUID landscapeToken) {
+    final BoundStatement stmtClear = clearSpanStructure.bind(
+        landscapeToken
+    );
+    session.executeAsync(stmtClear);
   }
 
   private Multi<LandscapeRecord> executeQuery(final BoundStatement stmtSelect) {

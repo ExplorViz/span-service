@@ -4,6 +4,7 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
@@ -77,6 +78,14 @@ public class LandscapeResource {
         .onFailure(LandscapeAssemblyException.class).transform(
             t -> new InternalServerErrorException("Landscape assembly error: " + t.getMessage(),
                 t));
+  }
+
+  @DELETE
+  @Path("/{token}/structure")
+  @Operation(summary = "Delete all landscape data for a token")
+  @APIResponses(@APIResponse(responseCode = "200", description = "Success"))
+  public void deleteStructure(@PathParam("token") final String token) {
+      landscapeLoader.clearLandscape(parseUuid(token));
   }
 
   @GET
