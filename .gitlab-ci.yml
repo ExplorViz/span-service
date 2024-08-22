@@ -1,3 +1,7 @@
+include:
+  - project: "ExplorViz/code/deployment"
+    file: ".gitlab-ci-explorviz-common.yml"
+
 default:
   tags:
     - exec-docker
@@ -23,7 +27,8 @@ stages:
   - build
   - code-analysis
   - test
-  - publish
+  - deploy:images
+  - deploy:retagging
 
 build:
   stage: build
@@ -63,69 +68,65 @@ integration-test:
     paths:
       - build
 
-.push-dockerhub-native-base-job:
-  stage: publish
-  image: explorviz/ubi-quarkus-mandrel-builder-image
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  script:
-    - ./gradlew clean assemble
-      -Dquarkus.package.type=native -Dquarkus.container-image.push=true
-      -Dquarkus.container-image.name=${DOCKERHUB_IMAGE_NAME_NATIVE}
-      -Dquarkus.container-image.additional-tags=$CI_COMMIT_SHORT_SHA
-      -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.kafka.common.security.authenticator.SaslClientAuthenticator\\,org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin"
-      -Dquarkus.container-image.username=$DOCKERHUB_USERNAME
-      -Dquarkus.container-image.password=$DOCKERHUB_PASSWORD
-  after_script:
-    - echo "Image was uploaded to Dockerhub; explorviz/${DOCKERHUB_IMAGE_NAME_NATIVE}:latest and explorviz/${DOCKERHUB_IMAGE_NAME_NATIVE}:$CI_COMMIT_SHORT_SHA"
+push-dockerhub-native-main-amd64:
+  extends: .build-and-deploy-quarkus-native
+  variables:
+    IMAGE_TAG: "amd64"
 
-push-dockerhub-native-main:
-  extends: .push-dockerhub-native-base-job
+push-dockerhub-native-main-arm64:
+  extends: .build-and-deploy-quarkus-native
+  rules:
+    - if: $MULTI_ARCH_BUILD || $ARM64_BUILD
+  variables:
+    IMAGE_TAG: "arm64"
+  tags:
+    - arm64
 
 push-dockerhub-native-mr:
-  stage: publish
-  image: explorviz/ubi-quarkus-mandrel-builder-image
+  extends: .build-and-deploy-quarkus-native
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  script:
-    - ./gradlew clean assemble
-      -Dquarkus.package.type=native
-      -Dquarkus.container-image.push=true
-      -Dquarkus.container-image.name=${DOCKERHUB_IMAGE_NAME_NATIVE}
-      -Dquarkus.container-image.tag=$CI_MERGE_REQUEST_ID-$CI_COMMIT_SHORT_SHA
-      -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.kafka.common.security.authenticator.SaslClientAuthenticator\\,org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin"
-      -Dquarkus.container-image.username=$DOCKERHUB_USERNAME
-      -Dquarkus.container-image.password=$DOCKERHUB_PASSWORD
-  after_script:
-    - echo "Image was uploaded to Dockerhub; explorviz/user-service-native:$CI_MERGE_REQUEST_ID-$CI_COMMIT_SHORT_SHA"
+  variables:
+    IMAGE_TAG: mr-${CI_MERGE_REQUEST_IID}-native
 
-.push-dockerhub-base-job:
-  stage: publish
+push-dockerhub-main-amd64:
+  extends: .build-and-deploy-quarkus-jvm
+  variables:
+    IMAGE_TAG: "amd64"
+
+push-dockerhub-main-arm64:
+  extends: .build-and-deploy-quarkus-jvm
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  script:
-    - ./gradlew clean assemble
-      -Dquarkus.container-image.build=true
-      -Dquarkus.container-image.push=true
-      -Dquarkus.container-image.additional-tags=$CI_COMMIT_SHORT_SHA
-      -Dquarkus.container-image.username=$DOCKERHUB_USERNAME
-      -Dquarkus.container-image.password=$DOCKERHUB_PASSWORD
-  after_script:
-    - echo "Image was uploaded to Dockerhub; explorviz/${DOCKERHUB_IMAGE_NAME}:latest and explorviz/${DOCKERHUB_IMAGE_NAME}:$CI_COMMIT_SHORT_SHA"
-
-push-dockerhub-main:
-  extends: .push-dockerhub-base-job
+    - if: $MULTI_ARCH_BUILD || $ARM64_BUILD
+  variables:
+    IMAGE_TAG: "arm64"
+  tags:
+    - arm64
 
 push-dockerhub-mr:
-  stage: publish
+  extends: .build-and-deploy-quarkus-jvm
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  script:
-    - ./gradlew clean assemble
-      -Dquarkus.container-image.build=true
-      -Dquarkus.container-image.push=true
-      -Dquarkus.container-image.tag=$CI_MERGE_REQUEST_ID-$CI_COMMIT_SHORT_SHA
-      -Dquarkus.container-image.username=$DOCKERHUB_USERNAME
-      -Dquarkus.container-image.password=$DOCKERHUB_PASSWORD
-  after_script:
-    - echo "Image was uploaded to Dockerhub; explorviz/${DOCKERHUB_IMAGE_NAME}:$CI_MERGE_REQUEST_ID-$CI_COMMIT_SHORT_SHA"
+  variables:
+    IMAGE_TAG: mr-${CI_MERGE_REQUEST_IID}-jvm
+
+retag-amd64-as-latest-jvm:
+  extends: .retag-dockerhub-image
+  variables:
+    SOURCE_TAG: "amd64"
+    TARGET_TAG: "latest"
+
+retag-amd64-as-latest-native:
+  extends: .retag-dockerhub-image
+  variables:
+    IMAGE_NAME: $DOCKERHUB_IMAGE_NAME_NATIVE
+    SOURCE_TAG: "amd64"
+    TARGET_TAG: "latest"
+
+publish-multi-arch-manifest-jvm:
+  extends: .retag-as-multi-arch-dockerhub-image
+
+publish-multi-arch-manifest-native:
+  extends: .retag-as-multi-arch-dockerhub-image
+  variables:
+    IMAGE_NAME: $DOCKERHUB_IMAGE_NAME_NATIVE
