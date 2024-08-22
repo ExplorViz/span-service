@@ -39,7 +39,7 @@ public class LandscapeLoader {
         + "AND time_seen >= ? "
         + "AND time_seen <= ? "
         + "ALLOW FILTERING");
-    this.clearSpanStructure = session.prepare("DELETE * "
+    this.clearSpanStructure = session.prepare("DELETE "
         + "FROM span_structure "
         + "WHERE landscape_token = ?");
   }
