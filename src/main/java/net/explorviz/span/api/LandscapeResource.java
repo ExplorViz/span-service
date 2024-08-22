@@ -85,7 +85,7 @@ public class LandscapeResource {
   @Operation(summary = "Delete all landscape data for a token")
   @APIResponses(@APIResponse(responseCode = "200", description = "Success"))
   public void deleteStructure(@PathParam("token") final String token) {
-      landscapeLoader.clearLandscape(parseUuid(token));
+    landscapeLoader.clearLandscape(parseUuid(token));
   }
 
   @GET
