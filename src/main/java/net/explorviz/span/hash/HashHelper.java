@@ -23,8 +23,10 @@ public final class HashHelper {
     hash.update(landscapeToken.getMostSignificantBits(), landscapeToken.getLeastSignificantBits(),
         applicationInstance, 0L);
 
-    final String builder = applicationName + ';' + nodeIpAddress + ';' + methodFqn
-        + ';' + k8sPodName + ';' + k8sNodeName + ';' + k8sNamespace + ';' + k8sDeploymentName;
+    String builder = applicationName + ';' + nodeIpAddress + ';' + methodFqn;
+    if(k8sPodName != null && !k8sPodName.isEmpty()) {
+      builder += ';' + k8sPodName + ';' + k8sNodeName + ';' + k8sNamespace + ';' + k8sDeploymentName;
+    }
     final byte[] bytes = builder.getBytes(StandardCharsets.UTF_8);
     int position = 0;
     for (; bytes.length - position >= 32; position += 32) {
