@@ -24,8 +24,9 @@ public final class HashHelper {
         applicationInstance, 0L);
 
     String builder = applicationName + ';' + nodeIpAddress + ';' + methodFqn;
-    if(k8sPodName != null && !k8sPodName.isEmpty()) {
-      builder += ';' + k8sPodName + ';' + k8sNodeName + ';' + k8sNamespace + ';' + k8sDeploymentName;
+    if (k8sPodName != null && !k8sPodName.isEmpty()) {
+      builder +=
+          ';' + k8sPodName + ';' + k8sNodeName + ';' + k8sNamespace + ';' + k8sDeploymentName;
     }
     final byte[] bytes = builder.getBytes(StandardCharsets.UTF_8);
     int position = 0;
