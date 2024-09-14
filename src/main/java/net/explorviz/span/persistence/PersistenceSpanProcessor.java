@@ -70,14 +70,11 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 
   @Override
   public void accept(final PersistenceSpan span) {
-
-    // condition was removed, since it was for some unknown reason causing issues.
-    // However, with cassandras primary key the whole table basically functions as a set, so no worries.
-//    final Set<String> knownHashes = knownHashesByLandscape.computeIfAbsent(span.landscapeToken(),
-//        uuid -> ConcurrentHashMap.newKeySet());
-//    if (knownHashes.add(span.methodHash())) {
+    final Set<String> knownHashes = knownHashesByLandscape.computeIfAbsent(span.landscapeToken(),
+        uuid -> ConcurrentHashMap.newKeySet());
+    if (knownHashes.add(span.methodHash())) {
       insertSpanStructure(span);
-//    }
+    }
 
     // TODO: We should probably only insert spans
     //  after corresponding span_structure has been inserted?
@@ -158,7 +155,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
             .log("Saved new dynamic span with method_hash={}, method_fqn={}, trace_id={}");
       } else {
         lastFailures.incrementAndGet();
-        //LOGGER.error("Could not persist trace by time", failure);
+        LOGGER.error("Could not persist trace by time", failure);
       }
     });
     /*session.executeAsync(stmtByHash).exceptionally(failure -> {
@@ -183,7 +180,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
             .log("Saved new trace with token={}, trace_id={}, and ten second epoch bucket={}");
       } else {
         lastFailures.incrementAndGet();
-        //LOGGER.error("Could not persist trace by time", failure);
+        LOGGER.error("Could not persist trace by time", failure);
       }
     });
   }
