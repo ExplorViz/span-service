@@ -24,6 +24,7 @@ protocol ExplorvizProtocol {
 
     record Span {
         string landscapeToken;
+        string gitCommitChecksum;
         string spanId;
         string parentSpanId;
         string traceId;
