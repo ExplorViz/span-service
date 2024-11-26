@@ -1,5 +1,6 @@
 package net.explorviz.span.landscape.assembler.impl;
 
+import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,23 +15,22 @@ import net.explorviz.span.landscape.Node;
 import net.explorviz.span.landscape.Package;
 import net.explorviz.span.landscape.assembler.LandscapeAssembler;
 import net.explorviz.span.landscape.loader.LandscapeRecord;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * Assemble a landscape graph out of a set of flat landscape records.
  */
 @ApplicationScoped
-public class DefaultLandscapeAssembler implements LandscapeAssembler {
+public class DefaultLandscapeAssembler implements LandscapeAssembler<Landscape> {
 
   @Override
   public Landscape assembleFromRecords(final Collection<LandscapeRecord> records) {
-    final UUID token =
-        records.stream().findFirst().orElseThrow(NoRecordsException::new).landscapeToken();
+    throw new NotImplementedException();
+  }
 
-    // Create empty landscape and insert all records
-    final Landscape landscape = new Landscape(token, new ArrayList<>());
-
-    this.insertAll(landscape, records);
-    return landscape;
+  @Override
+  public Landscape assembleFromRecords(final Multi<LandscapeRecord> records) {
+    throw new NotImplementedException();
   }
 
   @Override
@@ -52,6 +52,11 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
       // Add method to class
       cls.methods().add(new Method(record.methodName(), String.valueOf(record.methodHash())));
     }
+  }
+
+  @Override
+  public void insertAll(final Landscape landscape, final Multi<LandscapeRecord> records) {
+
   }
 
   private Node getNodeForRecord(final Landscape landscape, final LandscapeRecord record) {
