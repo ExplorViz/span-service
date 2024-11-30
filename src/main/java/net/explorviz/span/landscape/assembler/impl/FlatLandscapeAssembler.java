@@ -41,10 +41,13 @@ public class FlatLandscapeAssembler implements LandscapeAssembler<Uni<FlatLandsc
   public Uni<FlatLandscape> assembleFromRecords(final Multi<LandscapeRecord> records) {
     return records
         .toUni() // Convert Multi to Uni for the first record
+        .onFailure(NoSuchElementException.class) // Catch the NoSuchElementException
+        .recoverWithUni(() -> Uni.createFrom().failure(new NoRecordsException())) // Convert it to NoRecordsException
         .onItem()
-        .transform(LandscapeRecord::landscapeToken) // Extract token
-        .onFailure(NoSuchElementException.class)
-        .recoverWithUni(Uni.createFrom().failure(new NoRecordsException())) // Handle no records
+        .ifNull()
+        .failWith(new NoRecordsException("No records found")) // Extra safeguard for nulls
+        .onItem()
+        .transform(LandscapeRecord::landscapeToken)
         .onItem()
         .transform(token -> new FlatLandscape(token, new HashMap<>(), new HashMap<>(),
             new HashMap<>(), new HashMap<>(), new HashMap<>())) // Create FlatLandscape
