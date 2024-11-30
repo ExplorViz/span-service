@@ -1,18 +1,19 @@
 package net.explorviz.span.landscape.assembler.impl;
 
 import java.util.Optional;
-import net.explorviz.span.landscape.Application;
-import net.explorviz.span.landscape.Class;
-import net.explorviz.span.landscape.Landscape;
-import net.explorviz.span.landscape.Node;
-import net.explorviz.span.landscape.Package;
+import net.explorviz.span.landscape.model.hierarchical.Application;
+import net.explorviz.span.landscape.model.hierarchical.Class;
+import net.explorviz.span.landscape.model.flat.FlatLandscape;
+import net.explorviz.span.landscape.model.hierarchical.Landscape;
+import net.explorviz.span.landscape.model.hierarchical.Node;
+import net.explorviz.span.landscape.model.hierarchical.Package;
 
 /**
  * Utility class that provides various methods for finding elements in a landscape graph.
  */
-public final class AssemblyUtils {
+public final class AssemblyFindUtils {
 
-  private AssemblyUtils() {
+  private AssemblyFindUtils() {
     /* Utility Class */
   }
 

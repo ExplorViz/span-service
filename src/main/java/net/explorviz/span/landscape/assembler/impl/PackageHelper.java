@@ -2,8 +2,8 @@ package net.explorviz.span.landscape.assembler.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import net.explorviz.span.landscape.Application;
-import net.explorviz.span.landscape.Package;
+import net.explorviz.span.landscape.model.hierarchical.Application;
+import net.explorviz.span.landscape.model.hierarchical.Package;
 import net.explorviz.span.landscape.assembler.LandscapeAssemblyException;
 
 /**

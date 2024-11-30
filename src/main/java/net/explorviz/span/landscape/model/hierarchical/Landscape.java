@@ -1,4 +1,4 @@
-package net.explorviz.span.landscape;
+package net.explorviz.span.landscape.model.hierarchical;
 
 import java.util.List;
 import java.util.UUID;

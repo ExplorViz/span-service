@@ -1,4 +1,4 @@
-package net.explorviz.span.landscape;
+package net.explorviz.span.landscape.model.hierarchical;
 
 public record Method(
     String name,

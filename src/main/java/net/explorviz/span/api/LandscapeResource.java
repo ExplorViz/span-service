@@ -12,11 +12,12 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import java.time.Instant;
 import java.util.UUID;
-import net.explorviz.span.landscape.Landscape;
-import net.explorviz.span.landscape.assembler.LandscapeAssembler;
+import net.explorviz.span.landscape.model.flat.FlatLandscape;
+import net.explorviz.span.landscape.model.hierarchical.Landscape;
 import net.explorviz.span.landscape.assembler.LandscapeAssemblyException;
+import net.explorviz.span.landscape.assembler.impl.DefaultLandscapeAssembler;
+import net.explorviz.span.landscape.assembler.impl.FlatLandscapeAssembler;
 import net.explorviz.span.landscape.assembler.impl.NoRecordsException;
 import net.explorviz.span.landscape.loader.LandscapeLoader;
 import net.explorviz.span.landscape.loader.LandscapeRecord;
@@ -42,7 +43,10 @@ public class LandscapeResource {
   public LandscapeLoader landscapeLoader;
 
   @Inject
-  public LandscapeAssembler landscapeAssembler;
+  public DefaultLandscapeAssembler landscapeAssembler;
+
+  @Inject
+  public FlatLandscapeAssembler flatLandscapeAssembler;
 
   @Inject
   public TraceLoader traceLoader;
@@ -77,6 +81,37 @@ public class LandscapeResource {
         .onFailure(LandscapeAssemblyException.class).transform(
             t -> new InternalServerErrorException("Landscape assembly error: " + t.getMessage(),
                 t));
+  }
+
+  @GET
+  @Path("/{token}/structure-new")
+  @Operation(summary = "Retrieve a landscape graph",
+      description = "Assembles the (possibly empty) landscape of "
+          + "all spans observed in the given time range")
+  @APIResponses(@APIResponse(responseCode = "200", description = "Success",
+      content = @Content(mediaType = "application/json",
+          schema = @Schema(implementation = Landscape.class))))
+  public Uni<FlatLandscape> getStructureNew(@PathParam("token") final String token,
+      @QueryParam("from") final Long from, @QueryParam("to") final Long to) {
+    final Multi<LandscapeRecord> recordMulti;
+
+    if (!isTimeVerificationEnabled || from == null || to == null) {
+      // TODO: Cache (shared with PersistenceSpanProcessor?)
+      recordMulti = landscapeLoader.loadLandscape(parseUuid(token));
+    } else {
+      // TODO: Remove millisecond/nanosecond mismatch hotfix
+      recordMulti =
+          landscapeLoader.loadLandscape(parseUuid(token), from, to);
+    }
+
+    return flatLandscapeAssembler.assembleFromRecords(recordMulti)
+        .onFailure(NoRecordsException.class)
+        .transform(t -> new NotFoundException("Landscape not found or empty", t))
+        .onFailure(LandscapeAssemblyException.class).transform(
+            t -> new InternalServerErrorException("Landscape assembly error: " + t.getMessage(),
+                t));
+
+
   }
 
   @GET

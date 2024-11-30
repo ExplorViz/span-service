@@ -3,7 +3,6 @@ package net.explorviz.span.landscape.assembler;
 import io.smallrye.mutiny.Multi;
 import java.util.Collection;
 import java.util.Collections;
-import net.explorviz.span.landscape.Landscape;
 import net.explorviz.span.landscape.loader.LandscapeRecord;
 
 // TODO: Change so it can start assembling from Multi instead of Collection?

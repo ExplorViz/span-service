@@ -7,12 +7,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-import net.explorviz.span.landscape.Application;
-import net.explorviz.span.landscape.Class;
-import net.explorviz.span.landscape.Landscape;
-import net.explorviz.span.landscape.Method;
-import net.explorviz.span.landscape.Node;
-import net.explorviz.span.landscape.Package;
+import net.explorviz.span.landscape.model.hierarchical.Application;
+import net.explorviz.span.landscape.model.hierarchical.Class;
+import net.explorviz.span.landscape.model.hierarchical.Landscape;
+import net.explorviz.span.landscape.model.hierarchical.Method;
+import net.explorviz.span.landscape.model.hierarchical.Node;
+import net.explorviz.span.landscape.model.hierarchical.Package;
 import net.explorviz.span.landscape.assembler.LandscapeAssembler;
 import net.explorviz.span.landscape.loader.LandscapeRecord;
 import org.apache.commons.lang3.NotImplementedException;
@@ -65,7 +65,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler<Landscape> 
     final String ipAddress = record.nodeIpAddress();
 
     // Find node in landscape or insert new
-    final Optional<Node> foundNode = AssemblyUtils.findNode(landscape, ipAddress);
+    final Optional<Node> foundNode = AssemblyFindUtils.findNode(landscape, ipAddress);
 
     if (foundNode.isPresent()) {
       node = foundNode.get();
@@ -85,7 +85,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler<Landscape> 
     final int applicationInstance = record.applicationInstance();
     final String applicationLanguage = record.applicationLanguage();
     final Optional<Application> foundApp =
-        AssemblyUtils.findApplication(node, applicationName, applicationInstance);
+        AssemblyFindUtils.findApplication(node, applicationName, applicationInstance);
     if (foundApp.isPresent()) {
       app = foundApp.get();
     } else {
@@ -123,7 +123,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler<Landscape> 
   private Class getClassForRecord(final LandscapeRecord record, final Package leafPkg) {
     // Get or creat class
     final Class cls;
-    final Optional<Class> foundCls = AssemblyUtils.findClazz(leafPkg, record.className());
+    final Optional<Class> foundCls = AssemblyFindUtils.findClazz(leafPkg, record.className());
     if (foundCls.isPresent()) {
       cls = foundCls.get();
     } else {
