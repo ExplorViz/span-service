@@ -3,7 +3,8 @@ name: Init-Cassandra Pipeline
 on:
   push:
     branches: ['main']
-    paths: ['**.cql']
+    paths:
+      - '**/*.cql'
 
 jobs:
   build-and-deploy:
