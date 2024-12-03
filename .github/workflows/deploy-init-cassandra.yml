@@ -7,7 +7,7 @@ on:
       - "**/*.cql"
 
 jobs:
-  build-and-deploy:
+  deploy-init-cassandra:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
