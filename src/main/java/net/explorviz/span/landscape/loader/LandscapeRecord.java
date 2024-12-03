@@ -45,7 +45,8 @@ public record LandscapeRecord(
      */
     final String[] operationFqnSplit = methodFqn.split("\\.");
 
-    final String packageName = String.join(".", Arrays.copyOf(operationFqnSplit, operationFqnSplit.length - 2));
+    final String packageName = String.join(".", Arrays.copyOf(operationFqnSplit,
+        operationFqnSplit.length - 2));
     final String className = operationFqnSplit[operationFqnSplit.length - 2];
     final String methodName = operationFqnSplit[operationFqnSplit.length - 1];
 
