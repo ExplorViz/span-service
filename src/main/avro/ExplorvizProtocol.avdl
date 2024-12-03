@@ -24,6 +24,7 @@ protocol ExplorvizProtocol {
 
     record Span {
         string landscapeToken;
+        string gitCommitChecksum = "cross-commit";
         string spanId;
         string parentSpanId;
         string traceId;

@@ -3,12 +3,6 @@
 Scalable service that processes, persists, aggregates and queries the observed traces of method executions within
 monitored software applications.
 
-## Features
-
-This replaces the [trace-service](https://git.se.informatik.uni-kiel.de/ExplorViz/code/trace-service) and
-[landscape-service](https://git.se.informatik.uni-kiel.de/ExplorViz/code/landscape-service) previously used to process
-spans.
-
 ## Prerequisites
 
 - Java 17 or higher

@@ -38,6 +38,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private final PreparedStatement insertTraceByTimeStatement;
   private final PreparedStatement insertSpanStructureStatement;
   private final PreparedStatement updateSpanBucketCounter;
+  private final PreparedStatement updateSpanBucketCounterForCommits;
+
 
   @Inject
   public PersistenceSpanProcessor(final QuarkusCqlSession session) {
@@ -55,17 +57,21 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
             + "(landscape_token, method_hash, time_bucket, trace_id) "
             + "VALUES (?, ?, ?, ?)");*/
     this.insertTraceByTimeStatement = session.prepare("INSERT INTO trace_by_time "
-        + "(landscape_token, tenth_second_epoch, start_time, end_time, trace_id) "
-        + "VALUES (?, ?, ?, ?, ?)");
+        + "(landscape_token, git_commit_checksum, tenth_second_epoch, "
+        + "start_time, end_time, trace_id) "
+        + "VALUES (?, ?, ?, ?, ?, ?)");
     this.insertSpanStructureStatement = session.prepare("INSERT INTO span_structure "
-        + "(landscape_token, method_hash, node_ip_address, application_name, application_language, "
-        + "application_instance, method_fqn, time_seen, " 
+        + "(landscape_token, method_hash, node_ip_address, host_name, application_name, "
+        + "application_language, application_instance, method_fqn, time_seen, " 
         + "k8s_pod_name, k8s_node_name, k8s_namespace, k8s_deployment_name) "
-        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         + "USING TIMESTAMP ?");
     this.updateSpanBucketCounter = session.prepare("UPDATE span_count_per_time_bucket_and_token "
         + "SET span_count = span_count + 1 "
         + "WHERE landscape_token = ? AND tenth_second_epoch = ?");
+    this.updateSpanBucketCounterForCommits = session.prepare("UPDATE "
+        + "span_count_for_token_and_commit_and_time_bucket SET span_count = span_count + 1 "
+        + "WHERE landscape_token = ? AND git_commit_checksum = ? AND tenth_second_epoch = ?");
   }
 
   @Override
@@ -93,8 +99,15 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private void updateSpanBucketCounter(final PersistenceSpan span) {
     final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
 
-    final BoundStatement updateStmt =
+    BoundStatement updateStmt =
         this.updateSpanBucketCounter.bind(span.landscapeToken(), tenSecondBucket);
+
+    this.session.executeAsync(updateStmt);
+
+    updateStmt =
+        this.updateSpanBucketCounterForCommits.bind(span.landscapeToken(), span.gitCommitChecksum(),
+            tenSecondBucket
+        );
 
     this.session.executeAsync(updateStmt);
   }
@@ -103,7 +116,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private void insertSpanStructure(final PersistenceSpan span) {
     final BoundStatement stmtStructure =
         insertSpanStructureStatement.bind(span.landscapeToken(), span.methodHash(),
-            span.nodeIpAddress(), span.applicationName(), span.applicationLanguage(),
+            span.nodeIpAddress(), span.hostName(), span.applicationName(),
+            span.applicationLanguage(),
             span.applicationInstance(), span.methodFqn(), span.startTime(),
             span.k8sPodName(), span.k8sNodeName(), span.k8sNamespace(), span.k8sDeploymentName(),
             Instant.now().toEpochMilli());
@@ -169,7 +183,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
 
     final BoundStatement stmtByTime =
-        insertTraceByTimeStatement.bind(span.landscapeToken(), tenSecondBucket,
+        insertTraceByTimeStatement.bind(span.landscapeToken(), span.gitCommitChecksum(),
+            tenSecondBucket,
             span.startTime(), span.endTime(), span.traceId());
 
     session.executeAsync(stmtByTime).whenComplete((result, failure) -> {

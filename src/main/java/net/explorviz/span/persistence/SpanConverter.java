@@ -12,6 +12,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
   @Override
   public PersistenceSpan apply(final Span span) {
     final String landscapeTokenRaw = span.getLandscapeToken();
+    final String gitCommitChecksum = span.getGitCommitChecksum();
     // TODO: Remove invalid UUID hotfix
     UUID landscapeToken = PersistenceSpan.DEFAULT_UUID;
     if (!"mytokenvalue".equals(landscapeTokenRaw)) {
@@ -21,6 +22,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     final long startTime = span.getStartTimeEpochMilli();
     final long endTime = span.getEndTimeEpochMilli();
     final String nodeIpAddress = span.getHostIpAddress();
+    final String nodeHostName = span.getHostname();
     final String applicationName = span.getAppName();
     final int applicationInstance = Integer.parseInt(span.getAppInstanceId());
     final String applicationLanguage = span.getAppLanguage();
@@ -30,14 +32,14 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     final String k8sNamespace = span.getK8sNamespace();
     final String k8sDeploymentName = span.getK8sDeploymentName();
 
-    final String methodHashCode =
-        HashHelper.calculateSpanHash(landscapeToken, nodeIpAddress, applicationName,
-            applicationInstance, methodFqn, k8sPodName, k8sNodeName, k8sNamespace,
-            k8sDeploymentName);
+    final String methodHashCode = HashHelper.calculateSpanHash(landscapeToken, nodeIpAddress, applicationName,
+        applicationInstance, methodFqn, k8sPodName, k8sNodeName, k8sNamespace,
+        k8sDeploymentName);
 
-    return new PersistenceSpan(landscapeToken, span.getSpanId(), span.getParentSpanId(),
+    return new PersistenceSpan(landscapeToken, gitCommitChecksum, span.getSpanId(),
+        span.getParentSpanId(),
         span.getTraceId(), startTime, endTime,
-        nodeIpAddress, applicationName, applicationLanguage, applicationInstance, methodFqn,
-        methodHashCode, k8sPodName, k8sNodeName, k8sNamespace, k8sDeploymentName);
+        nodeIpAddress, nodeHostName, applicationName, applicationLanguage, applicationInstance,
+        methodFqn, methodHashCode, k8sPodName, k8sNodeName, k8sNamespace, k8sDeploymentName);
   }
 }

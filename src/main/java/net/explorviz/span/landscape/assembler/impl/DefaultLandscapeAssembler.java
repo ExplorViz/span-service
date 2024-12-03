@@ -73,7 +73,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
     if (foundNode.isPresent()) {
       node = foundNode.get();
     } else {
-      node = new Node(ipAddress, new ArrayList<>());
+      node = new Node(ipAddress, record.hostName(), new ArrayList<>());
       landscape.nodes().add(node);
     }
 
@@ -135,7 +135,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
     final String applicationLanguage = record.applicationLanguage();
     var app = pod.applications().stream()
         .filter(
-            a -> Objects.equals(a.name(), applicationName) && a.instance() == applicationInstance)
+            a -> Objects.equals(a.name(), applicationName) && a.instanceId() == applicationInstance)
         .findFirst().orElse(null);
     if (app == null) {
       app = new Application(applicationName, applicationLanguage, applicationInstance,

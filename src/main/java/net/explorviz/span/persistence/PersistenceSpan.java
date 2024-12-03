@@ -4,12 +4,14 @@ import java.util.UUID;
 
 public record PersistenceSpan(
     UUID landscapeToken,
+    String gitCommitChecksum,
     String spanId,
     String parentSpanId,
     String traceId,
     long startTime,
     long endTime,
     String nodeIpAddress, // TODO: Convert into InetAddress type?
+    String hostName,
     String applicationName,
     String applicationLanguage,
     int applicationInstance,
