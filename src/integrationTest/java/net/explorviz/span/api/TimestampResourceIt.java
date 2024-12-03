@@ -41,29 +41,28 @@ public class TimestampResourceIt {
 
     final UUID uuidExpected = UUID.randomUUID();
 
-    final PersistenceSpan firstSpanOfFirstBucket =
-        new PersistenceSpan(UUID.randomUUID(), gitCommitChecksum, "123L", "",
-            "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class.myMethod()", "847");
+    final PersistenceSpan differentTokenSpan = new PersistenceSpan(UUID.randomUUID(), gitCommitChecksum, "123L", "",
+        "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class.myMethod()", "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
-    final PersistenceSpan firstSpanOfSecondBuckec =
-        new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "", "1L", startEarly, endEarly,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "", "1L",
+        startEarly, endEarly,
+        "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
-    final PersistenceSpan firstSpanOfThirdBucket =
-        new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "", "3L", startLate, endLate,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "", "3L",
+        startLate, endLate,
+        "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
-    final PersistenceSpan secondSpanOfSecondBucket =
-        new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L", "", startExpected,
-            endExpected, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + otherMethodName,
-            "321");
+    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L", "",
+        startExpected,
+        endExpected, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class." + otherMethodName,
+        "321", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     spanProcessor.accept(firstSpanOfFirstBucket);
     spanProcessor.accept(firstSpanOfSecondBuckec);
@@ -81,18 +80,19 @@ public class TimestampResourceIt {
 
     // Check that there are the correct timestamp buckets with correct span count
     // Check that there are the correct timestamp buckets with correct span count
-    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {{
-      put(1702545560000L, 2);
-      put(1702545570000L, 1);
-    }};
+    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {
+      {
+        put(1702545560000L, 2);
+        put(1702545570000L, 1);
+      }
+    };
 
     for (final Map.Entry<Long, Integer> entry : expectedValuesMap.entrySet()) {
       long key = entry.getKey().longValue();
       int value = entry.getValue().intValue();
 
-      Optional<Timestamp> optionalTimestamp =
-          resultList.stream().filter(timestamp -> timestamp.epochMilli() == key)
-              .findFirst();
+      Optional<Timestamp> optionalTimestamp = resultList.stream().filter(timestamp -> timestamp.epochMilli() == key)
+          .findFirst();
 
       if (optionalTimestamp.isEmpty()) {
         Assertions.fail(
@@ -114,55 +114,55 @@ public class TimestampResourceIt {
 
     final UUID uuidExpected = UUID.randomUUID();
 
-    final PersistenceSpan firstSpanOfFirstBucket =
-        new PersistenceSpan(uuidExpected, gitCommitChecksum, "0123L", "",
-            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class.myMethod()", "847");
+    final PersistenceSpan firstSpanOfFirstBucket = new PersistenceSpan(uuidExpected, gitCommitChecksum, "0123L", "",
+        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
-    final PersistenceSpan firstSpanOfSecondBuckec =
-        new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "", "1L", secondBucketStart,
-            secondBucketEnd,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan firstSpanOfSecondBuckec = new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "",
+        "1L", secondBucketStart,
+        secondBucketEnd,
+        "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan firstSpanOfThirdBucket =
-        new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "", "3L", thirdBucketStart,
-            thirdBucketEnd,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan firstSpanOfThirdBucket = new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "",
+        "3L", thirdBucketStart,
+        thirdBucketEnd,
+        "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan secondSpanOfSecondBucket =
-        new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L", "", secondBucketStart,
-            secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + otherMethodName,
-            "321");
+    final PersistenceSpan secondSpanOfSecondBucket = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L",
+        "", secondBucketStart,
+        secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + otherMethodName,
+        "321");
 
     spanProcessor.accept(firstSpanOfFirstBucket);
     spanProcessor.accept(firstSpanOfSecondBuckec);
     spanProcessor.accept(firstSpanOfThirdBucket);
     spanProcessor.accept(secondSpanOfSecondBucket);
 
-    final Response response =
-        given().pathParam("token", uuidExpected).queryParam("newest", firstBucketStart - 10000)
-            .when()
-            .get("/v2/landscapes/{token}/timestamps");
+    final Response response = given().pathParam("token", uuidExpected).queryParam("newest", firstBucketStart - 10000)
+        .when()
+        .get("/v2/landscapes/{token}/timestamps");
 
     final List<Timestamp> resultList = response.getBody().as(new TypeRef<List<Timestamp>>() {
     });
 
-    //System.out.println("HIER DA " + Arrays.deepToString(resultList.toArray()));
+    // System.out.println("HIER DA " + Arrays.deepToString(resultList.toArray()));
 
     Assertions.assertEquals(3, resultList.size());
 
     // Check that there are the correct timestamp buckets with correct span count
-    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {{
-      put(1702545550000L, 1);
-      put(1702545560000L, 2);
-      put(1702545570000L, 1);
-    }};
+    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {
+      {
+        put(1702545550000L, 1);
+        put(1702545560000L, 2);
+        put(1702545570000L, 1);
+      }
+    };
 
     testResultListAgainstExpectedValues(resultList, expectedValuesMap);
   }
@@ -179,41 +179,39 @@ public class TimestampResourceIt {
     final UUID uuidExpected = UUID.randomUUID();
     final String expectedCommit = "testCommit";
 
-    final PersistenceSpan firstSpanOfFirstBucket =
-        new PersistenceSpan(uuidExpected, "notTestCommit-1", "0123L", "",
-            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class.myMethod()", "847");
+    final PersistenceSpan firstSpanOfFirstBucket = new PersistenceSpan(uuidExpected, "notTestCommit-1", "0123L", "",
+        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
-    final PersistenceSpan firstSpanOfSecondBuckec =
-        new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L", secondBucketStart,
-            secondBucketEnd,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan firstSpanOfSecondBuckec = new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L",
+        secondBucketStart,
+        secondBucketEnd,
+        "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan firstSpanOfThirdBucket =
-        new PersistenceSpan(uuidExpected, "notTestCommit-2", "789L", "", "3L", thirdBucketStart,
-            thirdBucketEnd,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan firstSpanOfThirdBucket = new PersistenceSpan(uuidExpected, "notTestCommit-2", "789L", "",
+        "3L", thirdBucketStart,
+        thirdBucketEnd,
+        "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan secondSpanOfSecondBucket =
-        new PersistenceSpan(uuidExpected, "notTestCommit-2", "456L", "0L", "", secondBucketStart,
-            secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + otherMethodName,
-            "321");
+    final PersistenceSpan secondSpanOfSecondBucket = new PersistenceSpan(uuidExpected, "notTestCommit-2", "456L", "0L",
+        "", secondBucketStart,
+        secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + otherMethodName,
+        "321");
 
     spanProcessor.accept(firstSpanOfFirstBucket);
     spanProcessor.accept(firstSpanOfSecondBuckec);
     spanProcessor.accept(firstSpanOfThirdBucket);
     spanProcessor.accept(secondSpanOfSecondBucket);
 
-    final Response response =
-        given().pathParam("token", uuidExpected).queryParam("commit", expectedCommit)
-            .when()
-            .get("/v2/landscapes/{token}/timestamps");
+    final Response response = given().pathParam("token", uuidExpected).queryParam("commit", expectedCommit)
+        .when()
+        .get("/v2/landscapes/{token}/timestamps");
 
     final List<Timestamp> resultList = response.getBody().as(new TypeRef<List<Timestamp>>() {
     });
@@ -221,9 +219,11 @@ public class TimestampResourceIt {
     Assertions.assertEquals(1, resultList.size());
 
     // Check that there are the correct timestamp buckets with correct span count
-    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {{
-      put(1702545560000L, 1);
-    }};
+    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {
+      {
+        put(1702545560000L, 1);
+      }
+    };
 
     testResultListAgainstExpectedValues(resultList, expectedValuesMap);
   }
@@ -240,44 +240,41 @@ public class TimestampResourceIt {
     final UUID uuidExpected = UUID.randomUUID();
     final String expectedCommit = "testCommit";
 
-    final PersistenceSpan firstSpanOfFirstBucket =
-        new PersistenceSpan(uuidExpected, expectedCommit, "0123L", "",
-            "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class.myMethod()", "847");
+    final PersistenceSpan firstSpanOfFirstBucket = new PersistenceSpan(uuidExpected, expectedCommit, "0123L", "",
+        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class.myMethod()", "847");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
-    final PersistenceSpan firstSpanOfSecondBuckec =
-        new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L", secondBucketStart,
-            secondBucketEnd,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan firstSpanOfSecondBuckec = new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L",
+        secondBucketStart,
+        secondBucketEnd,
+        "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan firstSpanOfThirdBucket =
-        new PersistenceSpan(uuidExpected, expectedCommit, "789L", "", "3L", thirdBucketStart,
-            thirdBucketEnd,
-            "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + duplicateMethodName, "847");
+    final PersistenceSpan firstSpanOfThirdBucket = new PersistenceSpan(uuidExpected, expectedCommit, "789L", "", "3L",
+        thirdBucketStart,
+        thirdBucketEnd,
+        "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + duplicateMethodName, "847");
 
-    final PersistenceSpan secondSpanOfSecondBucket =
-        new PersistenceSpan(uuidExpected, expectedCommit, "456L", "0L", "",
-            secondBucketStart + 1000,
-            secondBucketEnd + 1000, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class." + otherMethodName,
-            "321");
+    final PersistenceSpan secondSpanOfSecondBucket = new PersistenceSpan(uuidExpected, expectedCommit, "456L", "0L", "",
+        secondBucketStart + 1000,
+        secondBucketEnd + 1000, "nodeIp", "host-name", "app-name", "java", 0,
+        "net.explorviz.Class." + otherMethodName,
+        "321");
 
     spanProcessor.accept(firstSpanOfFirstBucket);
     spanProcessor.accept(firstSpanOfSecondBuckec);
     spanProcessor.accept(firstSpanOfThirdBucket);
     spanProcessor.accept(secondSpanOfSecondBucket);
 
-    final Response response =
-        given().pathParam("token", uuidExpected)
-            .queryParam("newest", secondBucketEnd - 10000)
-            .queryParam("commit", expectedCommit)
-            .when()
-            .get("/v2/landscapes/{token}/timestamps");
+    final Response response = given().pathParam("token", uuidExpected)
+        .queryParam("newest", secondBucketEnd - 10000)
+        .queryParam("commit", expectedCommit)
+        .when()
+        .get("/v2/landscapes/{token}/timestamps");
 
     final List<Timestamp> resultList = response.getBody().as(new TypeRef<List<Timestamp>>() {
     });
@@ -285,10 +282,12 @@ public class TimestampResourceIt {
     Assertions.assertEquals(2, resultList.size());
 
     // Check that there are the correct timestamp buckets with correct span count
-    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {{
-      put(1702545560000L, 2);
-      put(1702545570000L, 1);
-    }};
+    Map<Long, Integer> expectedValuesMap = new HashMap<Long, Integer>() {
+      {
+        put(1702545560000L, 2);
+        put(1702545570000L, 1);
+      }
+    };
 
     testResultListAgainstExpectedValues(resultList, expectedValuesMap);
   }
@@ -299,9 +298,8 @@ public class TimestampResourceIt {
       long key = entry.getKey();
       int value = entry.getValue();
 
-      Optional<Timestamp> optionalTimestamp =
-          resultList.stream().filter(timestamp -> timestamp.epochMilli() == key)
-              .findFirst();
+      Optional<Timestamp> optionalTimestamp = resultList.stream().filter(timestamp -> timestamp.epochMilli() == key)
+          .findFirst();
 
       if (optionalTimestamp.isEmpty()) {
         Assertions.fail(
@@ -312,7 +310,4 @@ public class TimestampResourceIt {
     }
   }
 
-
 }
-
-

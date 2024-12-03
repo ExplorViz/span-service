@@ -26,7 +26,7 @@ public class SpanConverterTest {
         .setHostname("testhostname")
         .setAppName("testappname")
         .setAppInstanceId("42")
-        .setAppLanguage("lava")
+        .setAppLanguage("java")
         .setFullyQualifiedOperationName("asd.bfd")
         .setHashCode("-909819732013219679")
         .setStartTimeEpochMilli(1668069002431000000L)
@@ -43,7 +43,11 @@ public class SpanConverterTest {
         span.getHostIpAddress(), span.getHostname(), span.getAppName(), span.getAppLanguage(),
         Integer.valueOf(span.getAppInstanceId()),
         span.getFullyQualifiedOperationName(),
-        span.getHashCode());
+        span.getHashCode(),
+        span.getK8sPodName(),
+        span.getK8sNodeName(),
+        span.getK8sNamespace(),
+        span.getK8sDeploymentName());
   }
 
   @Test

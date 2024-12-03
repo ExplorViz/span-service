@@ -43,30 +43,26 @@ public class TraceLoaderIt {
 
     final String gitCommitChecksum = "testGitCommitChecksum";
 
-    final PersistenceSpan earlySpan =
-        new PersistenceSpan(landscapeToken, gitCommitChecksum, "123L", "", "1L", startEarly,
-            endEarly, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class.myMethod()",
-            "847");
+    final PersistenceSpan earlySpan = new PersistenceSpan(landscapeToken, gitCommitChecksum, "123L", "", "1L",
+        startEarly,
+        endEarly, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
-    final PersistenceSpan expectedSpan =
-        new PersistenceSpan(landscapeToken, gitCommitChecksum, "456L", "", "2L", startExpected,
-            endExpected, "nodeIp", "host-name", "app-name", "java", 0,
-            "net.explorviz.Class.myMethod()",
-            "847");
+    final PersistenceSpan expectedSpan = new PersistenceSpan(landscapeToken, gitCommitChecksum, "456L", "", "2L",
+        startExpected,
+        endExpected, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
-    final PersistenceSpan lateSpan =
-        new PersistenceSpan(landscapeToken, gitCommitChecksum, "789L", "", "3L", startLate,
-            endLate, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
-            "847");
+    final PersistenceSpan lateSpan = new PersistenceSpan(landscapeToken, gitCommitChecksum, "789L", "", "3L", startLate,
+        endLate, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     spanProcessor.accept(earlySpan);
     spanProcessor.accept(expectedSpan);
     spanProcessor.accept(lateSpan);
 
-    List<Trace> result =
-        traceLoader.loadTracesStartingInRange(landscapeToken, 1701081830000L).collect().asList()
-            .await().indefinitely();
+    List<Trace> result = traceLoader.loadTracesStartingInRange(landscapeToken, 1701081830000L).collect().asList()
+        .await().indefinitely();
 
     Assertions.assertEquals(1, result.size(), "List of traces has wrong size.");
     Assertions.assertEquals(9, result.get(0).getClass().getDeclaredFields().length,

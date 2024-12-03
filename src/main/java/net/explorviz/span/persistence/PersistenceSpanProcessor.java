@@ -62,10 +62,12 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         + "VALUES (?, ?, ?, ?, ?, ?)");
     this.insertSpanStructureStatement = session.prepare("INSERT INTO span_structure "
         + "(landscape_token, method_hash, node_ip_address, host_name, application_name, "
-        + "application_language, application_instance, method_fqn, time_seen) "
-        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP ?");
-    this.updateSpanBucketCounter = session.prepare("UPDATE "
-        + "span_count_per_time_bucket_and_token SET span_count = span_count + 1 "
+        + "application_language, application_instance, method_fqn, time_seen, " 
+        + "k8s_pod_name, k8s_node_name, k8s_namespace, k8s_deployment_name) "
+        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        + "USING TIMESTAMP ?");
+    this.updateSpanBucketCounter = session.prepare("UPDATE span_count_per_time_bucket_and_token "
+        + "SET span_count = span_count + 1 "
         + "WHERE landscape_token = ? AND tenth_second_epoch = ?");
     this.updateSpanBucketCounterForCommits = session.prepare("UPDATE "
         + "span_count_for_token_and_commit_and_time_bucket SET span_count = span_count + 1 "
@@ -74,10 +76,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 
   @Override
   public void accept(final PersistenceSpan span) {
-
     final Set<String> knownHashes = knownHashesByLandscape.computeIfAbsent(span.landscapeToken(),
         uuid -> ConcurrentHashMap.newKeySet());
-
     if (knownHashes.add(span.methodHash())) {
       insertSpanStructure(span);
     }
@@ -119,6 +119,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
             span.nodeIpAddress(), span.hostName(), span.applicationName(),
             span.applicationLanguage(),
             span.applicationInstance(), span.methodFqn(), span.startTime(),
+            span.k8sPodName(), span.k8sNodeName(), span.k8sNamespace(), span.k8sDeploymentName(),
             Instant.now().toEpochMilli());
 
     session.executeAsync(stmtStructure).whenComplete((result, failure) -> {
@@ -168,7 +169,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
             .log("Saved new dynamic span with method_hash={}, method_fqn={}, trace_id={}");
       } else {
         lastFailures.incrementAndGet();
-        //LOGGER.error("Could not persist trace by time", failure);
+        LOGGER.error("Could not persist trace by time", failure);
       }
     });
     /*session.executeAsync(stmtByHash).exceptionally(failure -> {
@@ -191,11 +192,10 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         lastSavedTraces.incrementAndGet();
         LOGGER.atTrace().addArgument(span::landscapeToken).addArgument(span::traceId)
             .addArgument(tenSecondBucket)
-            .addArgument(span::traceId)
             .log("Saved new trace with token={}, trace_id={}, and ten second epoch bucket={}");
       } else {
         lastFailures.incrementAndGet();
-        //LOGGER.error("Could not persist trace by time", failure);
+        LOGGER.error("Could not persist trace by time", failure);
       }
     });
   }

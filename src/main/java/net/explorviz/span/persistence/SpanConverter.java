@@ -27,16 +27,19 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     final int applicationInstance = Integer.parseInt(span.getAppInstanceId());
     final String applicationLanguage = span.getAppLanguage();
     final String methodFqn = span.getFullyQualifiedOperationName();
+    final String k8sPodName = span.getK8sPodName();
+    final String k8sNodeName = span.getK8sNodeName();
+    final String k8sNamespace = span.getK8sNamespace();
+    final String k8sDeploymentName = span.getK8sDeploymentName();
 
-    final String methodHashCode =
-        HashHelper.calculateSpanHash(landscapeToken, nodeIpAddress, applicationName,
-            applicationInstance, methodFqn);
+    final String methodHashCode = HashHelper.calculateSpanHash(landscapeToken, nodeIpAddress,
+        applicationName, applicationInstance, methodFqn, k8sPodName, k8sNodeName, k8sNamespace,
+        k8sDeploymentName);
 
     return new PersistenceSpan(landscapeToken, gitCommitChecksum, span.getSpanId(),
         span.getParentSpanId(),
         span.getTraceId(), startTime, endTime,
         nodeIpAddress, nodeHostName, applicationName, applicationLanguage, applicationInstance,
-        methodFqn,
-        methodHashCode);
+        methodFqn, methodHashCode, k8sPodName, k8sNodeName, k8sNamespace, k8sDeploymentName);
   }
 }

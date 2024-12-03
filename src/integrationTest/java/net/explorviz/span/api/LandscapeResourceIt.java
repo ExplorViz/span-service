@@ -43,23 +43,26 @@ public class LandscapeResourceIt {
 
     final PersistenceSpan differentTokenSpan = new PersistenceSpan(
         UUID.randomUUID(), gitCommitChecksum, "123L", "", "1L", startEarly,
-        endEarly, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
-        "847");
+        endEarly, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()", "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
     final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "123L", "", "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + duplicateMethodName, "847");
+        "net.explorviz.Class." + duplicateMethodName, "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "789L", "", "3L", startLate, endLate, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + duplicateMethodName, "847");
+        "net.explorviz.Class." + duplicateMethodName, "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
-    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L",
+    final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, "456L", gitCommitChecksum,
         "0L", "", startExpected, endExpected, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + otherMethodName, "321");
+        "net.explorviz.Class." + otherMethodName, "321",
+        "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     spanProcessor.accept(differentTokenSpan);
     spanProcessor.accept(firstOccurenceSpan);
@@ -105,23 +108,26 @@ public class LandscapeResourceIt {
 
     final PersistenceSpan differentTokenSpan = new PersistenceSpan(
         UUID.randomUUID(), gitCommitChecksum, "123L", "", "1L", startEarly,
-        endEarly, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
-        "847");
+        endEarly, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()", "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
     final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "123L", "", "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + duplicateMethodName, "847");
+        "net.explorviz.Class." + duplicateMethodName, "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "789L", "", "3L", startLate, endLate, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + duplicateMethodName, "847");
+        "net.explorviz.Class." + duplicateMethodName, "847",
+        "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L",
         "", "2L", startExpected, endExpected, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + otherMethodName, "321");
+        "net.explorviz.Class." + otherMethodName, "321",
+        "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     spanProcessor.accept(differentTokenSpan);
     spanProcessor.accept(firstOccurenceSpan);
@@ -189,8 +195,8 @@ public class LandscapeResourceIt {
 
     final Trace[] result = response.getBody().as(Trace[].class);
 
-
-    // ATTENTION: For the moment, we only filter based on the starting point of traces
+    // ATTENTION: For the moment, we only filter based on the starting point of
+    // traces
     Assertions.assertEquals(2, result.length);
     Assertions.assertEquals(gitCommitChecksum, result[0].gitCommitChecksum());
   }
