@@ -82,7 +82,7 @@ public final class HighwayHash {
    */
   public void update(final long a0, final long a1, final long a2, final long a3) {
     if (done) {
-      throw new IllegalStateException("Can compute a hash only once per instance");
+      throw new IllegalStateException("Can compute a hash only once per instanceId");
     }
     v1[0] += mul0[0] + a0;
     v1[1] += mul0[1] + a1;

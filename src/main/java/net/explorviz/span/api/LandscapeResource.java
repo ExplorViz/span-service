@@ -91,6 +91,7 @@ public class LandscapeResource {
       return traceLoader.loadAllTraces(parseUuid(token));
     }
 
+    // ATTENTION: For the moment, we only filter based on the starting point of traces
     return traceLoader.loadTracesStartingInRange(parseUuid(token), from);
   }
 

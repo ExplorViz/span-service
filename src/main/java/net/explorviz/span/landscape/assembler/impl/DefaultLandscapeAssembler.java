@@ -65,7 +65,7 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
     if (foundNode.isPresent()) {
       node = foundNode.get();
     } else {
-      node = new Node(ipAddress, new ArrayList<>());
+      node = new Node(ipAddress, record.hostName(), new ArrayList<>());
       landscape.nodes().add(node);
     }
 
