@@ -3,6 +3,7 @@ name: Init-Cassandra Pipeline
 on:
   push:
 
+jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
