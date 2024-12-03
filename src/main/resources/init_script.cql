@@ -87,4 +87,3 @@ CREATE TABLE IF NOT EXISTS explorviz.span_structure
   time_seen            bigint,
   PRIMARY KEY ((landscape_token), method_hash)
 );
-
