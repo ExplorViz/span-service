@@ -2,7 +2,7 @@ plugins {
   id 'java'
   id 'io.quarkus'
   id 'com.adarshr.test-logger' version '3.2.0'
-  id "org.kordamp.gradle.jandex" version "1.1.0"
+  id "org.kordamp.gradle.jandex" version "2.0.0"
 }
 
 apply from: 'code-analysis/code-analysis.gradle'
@@ -101,6 +101,10 @@ configurations {
 
 // Regarding jandex dependency for each task
 // https://github.com/kordamp/jandex-gradle-plugin/issues/9
+
+tasks.named('imageBuild') {
+  dependsOn 'jandex'
+}
 
 tasks.named('checkstyleMain') {
   dependsOn 'jandex'
