@@ -164,22 +164,22 @@ public class LandscapeResourceIt {
     final PersistenceSpan differentTokenSpan = new PersistenceSpan(
         UUID.randomUUID(), gitCommitChecksum, "123L", "", "1L", startEarly,
         endEarly, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
-        "847");
+        "847", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final String duplicateMethodName = "myMethodName()";
     final String otherMethodName = "myOtherMethodName()";
 
     final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "123L", "", "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + duplicateMethodName, "847");
+        "net.explorviz.Class." + duplicateMethodName, "847", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum,
         "789L", "", "3L", startLate, endLate, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + duplicateMethodName, "847");
+        "net.explorviz.Class." + duplicateMethodName, "847", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L",
         "", "2L", startExpected, endExpected, "nodeIp", "host-name", "app-name", "java", 0,
-        "net.explorviz.Class." + otherMethodName, "321");
+        "net.explorviz.Class." + otherMethodName, "321", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     spanProcessor.accept(differentTokenSpan);
     spanProcessor.accept(firstOccurenceSpan);
