@@ -152,7 +152,8 @@ jobs:
     name: test stage 
     runs-on: ubuntu-latest
     needs: [build, pmd, checkstyle, unit-test]
-
+    steps:
+      - run: echo "finished test stage" # this is a indirection to the previous test steps
 
   push-dockerhub-native-main-amd64:
     name: Push Native Image (AMD64)
