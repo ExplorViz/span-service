@@ -212,7 +212,12 @@ jobs:
 
       - name: install quarkus-cli tool
         run: |
-          curl -Ls https://sh.jbang.dev | bash -s - trust add https://repo1.maven.org/maven2/io/quarkus/quarkus-cli/ && source ./bashrc
+          curl -Ls https://sh.jbang.dev | bash -s - trust add https://repo1.maven.org/maven2/io/quarkus/quarkus-cli/
           curl -Ls https://sh.jbang.dev | bash -s - app install --fresh --force quarkus@quarkusio
+          
+          # source .bashrc # dosnt work, instead just run the commands that should have been written to bashrc
+          # Add JBang to environment
+          alias j!=jbang
+          export PATH="$HOME/.jbang/bin:$PATH"
 
       - run: quarkus image build
