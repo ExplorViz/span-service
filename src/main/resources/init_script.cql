@@ -24,6 +24,14 @@ CREATE TABLE IF NOT EXISTS explorviz.span_count_per_time_bucket_and_token
   PRIMARY KEY (landscape_token, tenth_second_epoch)
   );
 
+CREATE TABLE IF NOT EXISTS explorviz.span_count_for_token_and_commit_and_time_bucket (
+  landscape_token UUID,
+  git_commit_checksum text,
+  tenth_second_epoch bigint,
+  span_count counter,
+  PRIMARY KEY ((landscape_token, git_commit_checksum), tenth_second_epoch)
+);
+
 /* SELECT trace_id FROM traceid_by_time WHERE landscape_token = X AND start_time_s = X; */
 
 /* Get complete traces by their trace id */
@@ -55,6 +63,7 @@ CREATE TABLE IF NOT EXISTS explorviz.trace_by_hash
 CREATE TABLE IF NOT EXISTS explorviz.trace_by_time
 (
   landscape_token uuid,
+  git_commit_checksum text,
   tenth_second_epoch bigint,
   start_time      bigint,
   end_time        bigint,
@@ -70,10 +79,15 @@ CREATE TABLE IF NOT EXISTS explorviz.span_structure
   landscape_token      uuid,
   method_hash          text,
   node_ip_address      text,
+  host_name            text,
   application_name     text,
   application_language text,
   application_instance int,
   method_fqn           text,
   time_seen            bigint,
+  k8s_pod_name         text,
+  k8s_node_name        text,
+  k8s_namespace        text,
+  k8s_deployment_name  text,
   PRIMARY KEY ((landscape_token), method_hash)
 );

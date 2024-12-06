@@ -9,28 +9,42 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import java.util.Optional;
 import java.util.UUID;
 import net.explorviz.span.persistence.PersistenceSpan;
 import net.explorviz.span.timestamp.Timestamp;
 import net.explorviz.span.timestamp.TimestampLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/v2/landscapes")
 @Produces(MediaType.APPLICATION_JSON)
 public class TimestampResource {
 
-  @Inject
+  private static final Logger LOGGER = LoggerFactory.getLogger(TimestampResource.class);
+
+
   TimestampLoader timestampLoader;
+
+  @Inject
+  public TimestampResource(final TimestampLoader timestampLoader) {
+    this.timestampLoader = timestampLoader;
+  }
 
   @GET
   @Path("/{token}/timestamps")
-  public Multi<Timestamp> getStructure(@PathParam("token") final String token,
-      @QueryParam("newest") final long newest, @QueryParam("oldest") final long oldest) {
+  public Multi<Timestamp> getTimestamps(@PathParam("token") final String token,
+      @QueryParam("newest") final long newest, @QueryParam("oldest") final long oldest,
+      @QueryParam("commit") final Optional<String> commit) {
+    LOGGER.atInfo().addArgument(token).addArgument(commit.orElse("all-commits"))
+        .addArgument(newest).log("Loading timestamps for token {}, commit {}, and from epoch {}");
+
     if (newest == 0 && oldest == 0) {
-      return this.timestampLoader.loadAllTimestampsForToken(parseUuid(token));
+      return this.timestampLoader.loadAllTimestampsForToken(parseUuid(token), commit);
     }
 
     if (newest != 0) {
-      return this.timestampLoader.loadNewerTimestampsForToken(parseUuid(token), newest);
+      return this.timestampLoader.loadNewerTimestampsForToken(parseUuid(token), newest, commit);
     }
     return Multi.createFrom().empty();
   }

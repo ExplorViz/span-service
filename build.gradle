@@ -2,7 +2,7 @@ plugins {
   id 'java'
   id 'io.quarkus'
   id 'com.adarshr.test-logger' version '3.2.0'
-  id "org.kordamp.gradle.jandex" version "1.1.0"
+  id "org.kordamp.gradle.jandex" version "2.0.0"
 }
 
 apply from: 'code-analysis/code-analysis.gradle'
@@ -37,10 +37,11 @@ dependencies {
   //integrationTestImplementation("org.jboss.slf4j:slf4j-jboss-logmanager")
 
   // REST implementation (Jackson serialization) + MicroProfile OpenAPI specification
-  implementation 'io.quarkus:quarkus-resteasy-reactive-jackson'
+  implementation 'io.quarkus:quarkus-rest-jackson'
   implementation 'io.quarkus:quarkus-smallrye-openapi'
 
   testImplementation 'io.quarkus:quarkus-junit5'
+  testImplementation 'io.quarkus:quarkus-junit5-mockito'
 
   // Integration / Api Tests
   testImplementation 'io.rest-assured:rest-assured'
@@ -100,6 +101,10 @@ configurations {
 
 // Regarding jandex dependency for each task
 // https://github.com/kordamp/jandex-gradle-plugin/issues/9
+
+tasks.named('imageBuild') {
+  dependsOn 'jandex'
+}
 
 tasks.named('checkstyleMain') {
   dependsOn 'jandex'
