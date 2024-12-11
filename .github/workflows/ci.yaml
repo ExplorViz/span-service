@@ -223,6 +223,11 @@ jobs:
           . $GITHUB_ENV
           . $HOME/.bashrc
 
+          echo $PATH
+
+      - run: echo $PATH
+      - run: which jbang
+      - run: which quarkus
       - run: quarkus extension add container-image-docker
       - run: quarkus image build
       - name: Log in to GitHub Container Registry
