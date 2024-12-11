@@ -225,7 +225,7 @@ jobs:
       #      export PATH="$HOME/.jbang/bin:$PATH"
       #      export PATH="$HOME/.jbang/bin:$PATH"
       - run: quarkus extension add container-image-docker
-      - run: quarkus image build
+      - run: quarkus image build docker
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
