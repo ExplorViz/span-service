@@ -232,4 +232,4 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: quarkus image push --registry ghcr.io --registry-username=${{ github.actor }} --registry-password=${{ secrets.GITHUB_TOKEN }} --group Hu1buerger 
+      - run: quarkus image push --registry ghcr.io --registry-username=${{ github.actor }} --registry-password=${{ secrets.GITHUB_TOKEN }} --group Hu1buerger -Dquarkus.container-image.builder=docker
