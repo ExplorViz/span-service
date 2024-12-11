@@ -216,8 +216,8 @@ jobs:
           curl -Ls https://sh.jbang.dev | bash -s - app install --fresh --force quarkus@quarkusio
 
           echo "$HOME/.jbang/bin:$PATH" >> $GITHUB_PATH
-          which jbang
-          which quarkus
+          #which jbang
+          #which quarkus
       - run: echo $PATH
       #- run: which jbang
       #- run: which quarkus
