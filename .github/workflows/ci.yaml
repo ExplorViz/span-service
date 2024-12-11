@@ -226,8 +226,8 @@ jobs:
           echo $PATH
 
       - run: echo $PATH
-      - run: which jbang
-      - run: which quarkus
+      #- run: which jbang
+      #- run: which quarkus
       #- run: |
       #      export PATH="$HOME/.jbang/bin:$PATH"
       #      export PATH="$HOME/.jbang/bin:$PATH"
