@@ -214,6 +214,14 @@ jobs:
         run: |
           curl -Ls https://sh.jbang.dev | bash -s - trust add https://repo1.maven.org/maven2/io/quarkus/quarkus-cli/
           curl -Ls https://sh.jbang.dev | bash -s - app install --fresh --force quarkus@quarkusio
+      
+      - name: Source .bashrc
+        run: |
+          echo $GITHUB_ENV
+          echo ----
+          cat  $HOME/.bashrc
+          . $GITHUB_ENV
+          . $HOME/.bashrc
 
       - run: quarkus extension add container-image-docker
       - run: quarkus image build
