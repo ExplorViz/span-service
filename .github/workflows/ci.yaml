@@ -214,10 +214,13 @@ jobs:
         run: |
           curl -Ls https://sh.jbang.dev | bash -s - trust add https://repo1.maven.org/maven2/io/quarkus/quarkus-cli/
           curl -Ls https://sh.jbang.dev | bash -s - app install --fresh --force quarkus@quarkusio
-          
-          # source .bashrc # dosnt work, instead just run the commands that should have been written to bashrc
-          # Add JBang to environment
-          alias j!=jbang
-          export PATH="$HOME/.jbang/bin:$PATH"
 
+      - run: quarkus extension add container-image-docker
       - run: quarkus image build
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: quarkus image push --registry ghcr.io --registry-username=${{ github.actor }} --registry-password=${{ secrets.GITHUB_TOKEN }} --group Hu1buerger 
