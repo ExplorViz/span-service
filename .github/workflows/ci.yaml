@@ -242,4 +242,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: quarkus image push --registry ghcr.io --registry-username=${{ github.actor }} --registry-password=${{ secrets.GITHUB_TOKEN }} --group ${{github.repository_owner}} -Dquarkus.container-image.builder=docker -D quarkus.docker.buildx.platform=linux/amd64,linux/arm64
+      - name: Setup ARM64 Emulation for multi arch build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu binfmt-support qemu-user-static
+          docker run --privileged --rm tonistiigi/binfmt --install all
+      - run: |
+          quarkus image push \
+              --registry ghcr.io \
+              --registry-username=${{ github.actor }} \
+              --registry-password=${{ secrets.GITHUB_TOKEN }} \
+              --group ${{github.repository_owner}} \
+              -Dquarkus.container-image.builder=docker \
+              -D quarkus.docker.buildx.platform=linux/amd64,linux/arm64
