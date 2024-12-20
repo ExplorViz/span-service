@@ -215,10 +215,4 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: quarkus image push \
-            --registry ghcr.io \
-            --registry-username=${{ github.actor }} \
-            --registry-password=${{ secrets.GITHUB_TOKEN }} \
-            --group ${{github.repository_owner}} \
-            -Dquarkus.container-image.builder=docker \
-            -D quarkus.docker.buildx.platform=linux/amd64,linux/arm64
+      - run: quarkus image push --registry ghcr.io --registry-username=${{ github.actor }} --registry-password=${{ secrets.GITHUB_TOKEN }} --group ${{github.repository_owner}} -Dquarkus.container-image.builder=docker -D quarkus.docker.buildx.platform=linux/amd64,linux/arm64
