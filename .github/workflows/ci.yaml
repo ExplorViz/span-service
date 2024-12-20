@@ -160,7 +160,8 @@ jobs:
     name: Push Native Image (AMD64)
     runs-on: ubuntu-latest
     needs: [test]
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
+    if: false
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -176,6 +177,7 @@ jobs:
   push-dockerhub-native-main-arm64:
     name: Push Native Image (ARM64)
     runs-on: ubuntu-latest
+    if: false
     needs: [test]
     #FIXME if: github.ref == 'refs/heads/main' && env.ARM64_BUILD == 'true'
     steps:
@@ -196,7 +198,32 @@ jobs:
           reg-username: ${{ github.actor }}
           reg-token: ${{ secrets.GITHUB_TOKEN }}
 
+  docker-image-native:
+    name: Docker image native
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
+      - name: setup quarkus-cli
+        uses: ./.github/actions/setup-quarkus
+
+      - run: quarkus image build docker
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup ARM64 Emulation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu binfmt-support qemu-user-static
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          
+      - run: quarkus image push --native --registry ghcr.io --registry-username=${{ github.actor }} --registry-password=${{ secrets.GITHUB_TOKEN }} --group ${{github.repository_owner}} -Dquarkus.container-image.builder=docker -D quarkus.docker.buildx.platform=linux/amd64,linux/arm64
   docker-image-jvm:
     name: Docker image JVM
     runs-on: ubuntu-latest
