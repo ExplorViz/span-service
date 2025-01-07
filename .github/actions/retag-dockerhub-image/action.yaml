@@ -12,14 +12,14 @@ inputs:
     required: true
 outputs: {}
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Install Crane
-      shell: sh 
+      shell: sh
       run: |
         curl -sSL https://github.com/google/go-containerregistry/releases/download/v0.9.0/go-containerregistry_Linux_x86_64.tar.gz | tar xz -C /usr/local/bin crane
     - name: Retag Image
       shell: sh
       run: |
-        crane auth login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }} index.docker.io
-        crane cp ${{ secrets.DOCKERHUB_ORGANIZATION }}/${{ inputs.image-name }}:${{ inputs.source-tag }} ${{ secrets.DOCKERHUB_ORGANIZATION }}/${{ inputs.image-name }}:${{ inputs.target-tag }}
+        crane auth login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} index.docker.io
+        crane cp ${{ inputs.image-name }}:${{ inputs.source-tag }} ${{ inputs.image-name }}:${{ inputs.target-tag }}
