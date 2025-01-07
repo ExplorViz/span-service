@@ -169,7 +169,7 @@ jobs:
       - name: Build and Deploy Quarkus Native Image
         uses: ./.github/actions/build-and-deploy-quarkus-native
         with:
-          image-name:${{ vars.DOCKER_IMAGE_NAME }}
+          image-name: ${{ vars.DOCKER_IMAGE_NAME }}
           image-tag: "amd64"
           reg-username: ${{ secrets.DOCKER_USERNAME }}
           reg-token: ${{ secrets.DOCKER_PASSWORD }}
@@ -193,7 +193,7 @@ jobs:
       - name: Build and Deploy Quarkus Native Image
         uses: ./.github/actions/build-and-deploy-quarkus-native
         with:
-          image-name:${{ vars.DOCKER_IMAGE_NAME }}
+          image-name: ${{ vars.DOCKER_IMAGE_NAME }}
           image-tag: "arm64"
           reg-username: ${{ secrets.DOCKER_USERNAME }}
           reg-token: ${{ secrets.DOCKER_PASSWORD }}
