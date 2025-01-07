@@ -22,11 +22,6 @@ runs:
       with:
         distribution: "graalvm"
         java-version: "21"
-    - name: Log in to Docker Container Registry
-      uses: docker/login-action@v3
-      with:
-        username: ${{ inputs.docker-username }}
-        password: ${{ inputs.docker-password }}
     - name: Build Quarkus Native Image
       shell: sh
       run: |
@@ -35,4 +30,6 @@ runs:
           -Dquarkus.container-image.push=true \
           -Dquarkus.container-image.name=${{ inputs.image-name }} \
           -Dquarkus.container-image.tag=${{ inputs.image-tag }} \
-          -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.kafka.common.security.authenticator.SaslClientAuthenticator\,org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin"
+          -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.kafka.common.security.authenticator.SaslClientAuthenticator\,org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin" \
+          -Dquarkus.container-image.username=${{ inputs.docker-username }} \
+          -Dquarkus.container-image.password=${{ inputs.docker-password }}

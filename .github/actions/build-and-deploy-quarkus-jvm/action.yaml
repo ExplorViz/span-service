@@ -22,11 +22,6 @@ runs:
       with:
         distribution: "temurin"
         java-version: "21"
-    - name: Log in to Docker Container Registry
-      uses: docker/login-action@v3
-      with:
-        username: ${{ inputs.docker-username }}
-        password: ${{ inputs.docker-password }}
     - name: Build Quarkus JVM Image
       shell: sh
       run: |
@@ -34,4 +29,7 @@ runs:
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.push=true \
           -Dquarkus.container-image.name=${{ inputs.image-name }} \
-          -Dquarkus.container-image.tag=${{ inputs.image-tag }}
+          -Dquarkus.container-image.tag=${{ inputs.image-tag }} \
+          -Dquarkus.container-image.username=${{ inputs.docker-username }} \
+          -Dquarkus.container-image.password=${{ inputs.docker-password }}
+
