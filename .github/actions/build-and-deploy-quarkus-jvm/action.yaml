@@ -28,6 +28,7 @@ runs:
         ./gradlew clean assemble \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.push=true \
+          -Dquarkus.jib.platforms=${{ inputs.platforms }} \
           -Dquarkus.container-image.name=${{ inputs.image-name }} \
           -Dquarkus.container-image.tag=${{ inputs.image-tag }} \
           -Dquarkus.container-image.username=${{ inputs.docker-username }} \

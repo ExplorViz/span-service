@@ -1,6 +1,9 @@
 name: Build and Deploy Quarkus Native Image
 description: Build and deploy Quarkus native image to DockerHub
 inputs:
+  platforms:
+    description: Architectures for image, e.g. linux/amd64,linux/arm64/v8
+    required: true
   docker-username:
     description: User name to log into registry
     required: true
@@ -28,6 +31,7 @@ runs:
         ./gradlew clean assemble \
           -Dquarkus.package.type=native \
           -Dquarkus.container-image.push=true \
+          -Dquarkus.jib.platforms=${{ inputs.platforms }} \
           -Dquarkus.container-image.name=${{ inputs.image-name }} \
           -Dquarkus.container-image.tag=${{ inputs.image-tag }} \
           -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.kafka.common.security.authenticator.SaslClientAuthenticator\,org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin" \
