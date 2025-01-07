@@ -1,6 +1,9 @@
 name: Build and Deploy Quarkus JVM Image
 description: Build and deploy Quarkus JVM image to DockerHub
 inputs:
+  platforms:
+    description: Architectures for image, e.g. linux/amd64,linux/arm64/v8
+    required: true
   docker-username:
     description: User name to log into registry
     required: true
