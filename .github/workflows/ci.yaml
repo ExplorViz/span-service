@@ -219,5 +219,7 @@ jobs:
       - name: Build and Push Image
         uses: ./.github/actions/build-and-deploy-quarkus-jvm
         with:
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
           image-name: explorviz/span-service-jvm
           image-tag: ${{ matrix.arch }}

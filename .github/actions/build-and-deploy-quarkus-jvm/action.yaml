@@ -1,6 +1,12 @@
 name: Build and Deploy Quarkus JVM Image
 description: Build and deploy Quarkus JVM image to DockerHub
 inputs:
+  docker-username:
+    description: User name to log into registry
+    required: true
+  docker-password:
+    description: Password to log into registry
+    required: true
   image-name:
     description: Docker image name
     required: true
@@ -24,5 +30,5 @@ runs:
           -Dquarkus.container-image.push=true \
           -Dquarkus.container-image.name=${{ inputs.image-name }} \
           -Dquarkus.container-image.tag=${{ inputs.image-tag }} \
-          -Dquarkus.container-image.username=${{ secrets.DOCKER_USERNAME }} \
-          -Dquarkus.container-image.password=${{ secrets.DOCKER_PASSWORD }}
+          -Dquarkus.container-image.username=${{ inputs.docker-username }} \
+          -Dquarkus.container-image.password=${{ inputs.docker-password }}
