@@ -139,8 +139,8 @@ jobs:
 
   docker-image-native:
     name: Docker image native
-    # needs: [test]
-    runs-on: macos-latest
+    needs: [test]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -151,10 +151,11 @@ jobs:
           docker-username: ${{ secrets.DOCKER_USERNAME }}
           docker-password: ${{ secrets.DOCKER_PASSWORD }}
           image-name: ${{ vars.DOCKER_NATIVE_IMAGE_NAME }}
+          image-tag: "latest"
 
   docker-image-jvm:
     name: Docker image JVM
-    #needs: [test]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -166,3 +167,4 @@ jobs:
           docker-username: ${{ secrets.DOCKER_USERNAME }}
           docker-password: ${{ secrets.DOCKER_PASSWORD }}
           image-name: ${{ vars.DOCKER_JVM_IMAGE_NAME }}
+          image-tag: "latest"
