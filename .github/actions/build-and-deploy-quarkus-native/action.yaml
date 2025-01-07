@@ -1,17 +1,17 @@
 name: Build and Deploy Quarkus Native Image
 description: Build and deploy Quarkus native image to DockerHub
 inputs:
+  docker-username:
+    description: User name to log into registry
+    required: true
+  docker-password:
+    description: Password to log into registry
+    required: true
   image-name:
     description: Docker image name
     required: true
   image-tag:
     description: Docker image tag
-    required: true
-  reg-username:
-    description: image registry username
-    required: true
-  reg-token:
-    description: image registry token
     required: true
 outputs: {}
 runs:
@@ -25,8 +25,8 @@ runs:
     - name: Log in to Docker Container Registry
       uses: docker/login-action@v3
       with:
-        username: ${{ inputs.reg-username }}
-        password: ${{ inputs.reg-token }}
+        username: ${{ inputs.docker-username }}
+        password: ${{ inputs.docker-password }}
     - name: Build Quarkus Native Image
       shell: sh
       run: |
@@ -35,7 +35,4 @@ runs:
           -Dquarkus.container-image.push=true \
           -Dquarkus.container-image.name=${{ inputs.image-name }} \
           -Dquarkus.container-image.tag=${{ inputs.image-tag }} \
-          -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.kafka.common.security.authenticator.SaslClientAuthenticator\,org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin" \
-
-    # -Dquarkus.container-image.username=${{ secrets.DOCKER_USERNAME }} \
-    #-Dquarkus.container-image.password=${{ secrets.DOCKER_PASSWORD }}
+          -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.kafka.common.security.authenticator.SaslClientAuthenticator\,org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin"
