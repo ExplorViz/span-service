@@ -28,7 +28,6 @@ stages:
   - code-analysis
   - test
   - deploy:images
-  - deploy:retagging
 
 build:
   stage: build
@@ -68,20 +67,6 @@ integration-test:
     paths:
       - build
 
-push-dockerhub-native-main-amd64:
-  extends: .build-and-deploy-quarkus-native
-  variables:
-    IMAGE_TAG: "amd64"
-
-push-dockerhub-native-main-arm64:
-  extends: .build-and-deploy-quarkus-native
-  rules:
-    - if: $MULTI_ARCH_BUILD || $ARM64_BUILD
-  variables:
-    IMAGE_TAG: "arm64"
-  tags:
-    - arm64
-
 push-dockerhub-native-mr:
   extends: .build-and-deploy-quarkus-native
   rules:
@@ -89,44 +74,9 @@ push-dockerhub-native-mr:
   variables:
     IMAGE_TAG: mr-${CI_MERGE_REQUEST_IID}-native
 
-push-dockerhub-main-amd64:
-  extends: .build-and-deploy-quarkus-jvm
-  variables:
-    IMAGE_TAG: "amd64"
-
-push-dockerhub-main-arm64:
-  extends: .build-and-deploy-quarkus-jvm
-  rules:
-    - if: $MULTI_ARCH_BUILD || $ARM64_BUILD
-  variables:
-    IMAGE_TAG: "arm64"
-  tags:
-    - arm64
-
 push-dockerhub-mr:
   extends: .build-and-deploy-quarkus-jvm
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   variables:
     IMAGE_TAG: mr-${CI_MERGE_REQUEST_IID}-jvm
-
-retag-amd64-as-latest-jvm:
-  extends: .retag-dockerhub-image
-  variables:
-    SOURCE_TAG: "amd64"
-    TARGET_TAG: "latest"
-
-retag-amd64-as-latest-native:
-  extends: .retag-dockerhub-image
-  variables:
-    IMAGE_NAME: $DOCKERHUB_IMAGE_NAME_NATIVE
-    SOURCE_TAG: "amd64"
-    TARGET_TAG: "latest"
-
-publish-multi-arch-manifest-jvm:
-  extends: .retag-as-multi-arch-dockerhub-image
-
-publish-multi-arch-manifest-native:
-  extends: .retag-as-multi-arch-dockerhub-image
-  variables:
-    IMAGE_NAME: $DOCKERHUB_IMAGE_NAME_NATIVE
