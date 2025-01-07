@@ -1,0 +1,25 @@
+name: Retag DockerHub Image
+description: Retag a Docker image on DockerHub
+inputs:
+  source-tag:
+    description: Source image tag
+    required: true
+  target-tag:
+    description: Target image tag
+    required: true
+  image-name:
+    description: Docker image name
+    required: true
+outputs: {}
+runs:
+  using: "composite"
+  steps:
+    - name: Install Crane
+      shell: sh
+      run: |
+        curl -sSL https://github.com/google/go-containerregistry/releases/download/v0.9.0/go-containerregistry_Linux_x86_64.tar.gz | tar xz -C /usr/local/bin crane
+    - name: Retag Image
+      shell: sh
+      run: |
+        crane auth login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} index.docker.io
+        crane cp ${{ inputs.image-name }}:${{ inputs.source-tag }} ${{ inputs.image-name }}:${{ inputs.target-tag }}

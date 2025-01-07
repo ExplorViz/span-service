@@ -106,6 +106,10 @@ tasks.named('imageBuild') {
   dependsOn 'jandex'
 }
 
+tasks.named('imagePush') {
+  dependsOn 'jandex'
+}
+
 tasks.named('checkstyleMain') {
   dependsOn 'jandex'
 }

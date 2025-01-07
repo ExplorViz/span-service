@@ -1,0 +1,25 @@
+name: Publish Multi-Arch Manifest
+description: Publish a multi-architecture Docker manifest
+inputs:
+  image-name:
+    description: Docker image name
+    required: true
+  target-tag:
+    description: Target image tag
+    required: true
+outputs: {}
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Manifest Tool
+      shell: sh
+      run: |
+        curl -L https://github.com/estesp/manifest-tool/releases/download/v1.0.3/manifest-tool-linux-amd64 -o /usr/local/bin/manifest-tool
+        chmod +x /usr/local/bin/manifest-tool
+    - name: Publish Multi-Arch Manifest
+      shell: sh
+      run: |
+        manifest-tool push from-args \
+          --platforms linux/amd64,linux/arm64/v8 \
+          --template ${{ secrets.DOCKERHUB_ORGANIZATION }}/${{ inputs.image-name }}:ARCH \
+          --target ${{ secrets.DOCKERHUB_ORGANIZATION }}/${{ inputs.image-name }}:${{ inputs.target-tag }}

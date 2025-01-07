@@ -1,0 +1,174 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "graalvm"
+          java-version: "21"
+      - name: Cache Gradle Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Build Project
+        run: ./gradlew assemble
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+  pmd:
+    name: PMD Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "graalvm"
+          java-version: "21"
+      - name: Cache Gradle Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Run PMD Analysis
+        run: ./gradlew pmdMain
+
+  checkstyle:
+    name: Checkstyle Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "graalvm"
+          java-version: "21"
+      - name: Cache Gradle Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Run Checkstyle
+        run: ./gradlew checkstyleMain
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "graalvm"
+          java-version: "21"
+      - name: Cache Gradle Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Run Unit Tests
+        run: ./gradlew test
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build
+    # Do not run since integration tests are not working
+    if: false
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "graalvm"
+          java-version: "21"
+      - name: Cache Gradle Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Run Integration Tests
+        run: ./gradlew integrationTest
+      - uses: actions/upload-artifact@v4 # upload test results
+        if: success() || failure() # run this step even if previous step failed
+        with:
+          name: test-results-integration
+          path: build/reports/tests/integrationTest/index.html
+
+  # Combine test reports if needed
+  test-report:
+    name: Test Report
+    runs-on: ubuntu-latest
+    # Do not run since integration tests are not working
+    if: false
+    needs: [unit-test, integration-test]
+    steps:
+      - uses: dorny/test-reporter@v1
+        with:
+          artifact: /test-results-(.*)/ # artifact name
+          name: java-junit # Name of the check run which will be created
+          path: "*.html" # Path to test results (inside artifact .zip)
+          reporter: jest-junit # Format of test results
+
+  test:
+    name: test end node
+    runs-on: ubuntu-latest
+    needs: [build, pmd, checkstyle, unit-test]
+    steps:
+      - run: echo "finished test stage" # this is a indirection to the previous test steps
+
+  docker-image-native:
+    name: Docker image native
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Build and Push Image
+        uses: ./.github/actions/build-and-deploy-quarkus-native
+        with:
+          platforms: "linux/amd64,linux/arm64/v8"
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+          image-name: ${{ vars.DOCKER_NATIVE_IMAGE_NAME }}
+          image-tag: "latest"
+
+  docker-image-jvm:
+    name: Docker image JVM
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Build and Push Image
+        uses: ./.github/actions/build-and-deploy-quarkus-jvm
+        with:
+          platforms: "linux/amd64,linux/arm64/v8"
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+          image-name: ${{ vars.DOCKER_JVM_IMAGE_NAME }}
+          image-tag: "latest"
