@@ -1,8 +1,15 @@
 plugins {
   id 'java'
   id 'io.quarkus'
+
   id 'com.adarshr.test-logger' version '3.2.0'
   id "org.kordamp.gradle.jandex" version "2.0.0"
+
+  id "org.jetbrains.kotlin.jvm" version "2.0.21"
+  id "org.jetbrains.kotlin.plugin.allopen" version "2.0.21"
+
+  id "io.gitlab.arturbosch.detekt" version "1.23.7"
+  id "com.diffplug.spotless" version "6.25.0"
 }
 
 apply from: 'code-analysis/code-analysis.gradle'
@@ -19,6 +26,9 @@ dependencies {
   implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
 
   implementation 'io.quarkus:quarkus-container-image-jib'
+
+  implementation "io.quarkus:quarkus-kotlin"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
   // Needed for scheduled jobs
   implementation 'io.quarkus:quarkus-scheduler'
@@ -65,6 +75,10 @@ compileJava {
 
 compileTestJava {
   options.encoding = 'UTF-8'
+}
+
+kotlin {
+  jvmToolchain(21)
 }
 
 java {
@@ -138,6 +152,15 @@ tasks.named('quarkusDependenciesBuild') {
   dependsOn 'jandex'
 }
 
+spotless {
+  kotlin {
+    ktfmt().kotlinlangStyle().configure {
+      it.setMaxWidth(120)
+    }
+  }
+}
+
+
 tasks.withType(JavaCompile).configureEach {
   // Turn on all javac warnings except classfile and processing, which produces many false-positives about annotations
   options.compilerArgs << "-Xlint:all" << "-Xlint:-classfile" << "-Xlint:-processing"
@@ -146,6 +169,14 @@ tasks.withType(JavaCompile).configureEach {
 test {
   useJUnitPlatform()
   testLogging.showStandardStreams = true
+}
+
+// Needed by Mockito since closed Kotlin classes cannot be mocked
+allOpen {
+  annotation("jakarta.ws.rs.Path")
+  annotation("jakarta.enterprise.context.ApplicationScoped")
+  annotation("jakarta.persistence.Entity")
+  annotation("io.quarkus.test.junit.QuarkusTest")
 }
 
 integrationTest {
