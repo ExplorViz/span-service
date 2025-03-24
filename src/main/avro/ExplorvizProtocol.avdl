@@ -36,7 +36,6 @@ protocol ExplorvizProtocol {
         string appName;
         string appInstanceId;
         string appLanguage;
-        string hashCode = "default-hashcode";
         
         string k8sPodName = "";
         string k8sNodeName = "";
