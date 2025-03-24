@@ -10,9 +10,12 @@ import jakarta.enterprise.inject.Produces
 import jakarta.inject.Inject
 import java.util.concurrent.atomic.AtomicInteger
 import net.explorviz.adapter.service.converter.SpanConverterImpl
-import net.explorviz.span.adapter.service.validation.SpanValidator
 import net.explorviz.avro.EventType
 import net.explorviz.avro.TokenEvent
+import net.explorviz.span.adapter.service.validation.SpanValidator
+import net.explorviz.span.persistence.PersistenceSpan
+import net.explorviz.span.persistence.PersistenceSpanProcessor
+import net.explorviz.span.persistence.SpanConverter
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Bytes
 import org.apache.kafka.streams.KeyValue
@@ -26,6 +29,7 @@ import org.apache.kafka.streams.state.KeyValueStore
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 
 /** Builds a KafkaStream topology instance with all its transformers. Entry point of the stream analysis. */
 @ApplicationScoped
@@ -53,6 +57,14 @@ class TopologyProducer {
     @Inject lateinit var tokenEventAvroSerde: SpecificAvroSerde<TokenEvent>
 
     @Inject lateinit var spanConverter: SpanConverterImpl
+
+    @Inject
+    lateinit var persistenceSpanConverter: /* default */SpanConverter
+
+
+    @Inject
+    lateinit var persistenceProcessor: /* default */PersistenceSpanProcessor
+
 
     @Produces
     fun buildTopology(): Topology {
@@ -94,6 +106,18 @@ class TopologyProducer {
                 val span = spanConverter.fromOpenTelemetrySpan(value)
                 KeyValue(span.landscapeToken, span)
             }
+
+        // Map to our more space-efficient PersistenceSpan format
+        // Combine with previous step
+        val persistenceStream: KStream<String, PersistenceSpan> = explorvizSpanStream.mapValues(
+            this.persistenceSpanConverter,
+        )
+
+        persistenceStream.foreach { _ : String?, span: PersistenceSpan? ->
+            persistenceProcessor.accept(
+                span,
+            )
+        }
 
 
         // Forward Spans (general purpose event)
