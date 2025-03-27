@@ -63,6 +63,7 @@ dependencies {
   testImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
   integrationTestImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
   testImplementation "org.testcontainers:kafka:1.17.5"
+  testImplementation group: "org.apache.kafka", name: "kafka-streams-test-utils", version: "3.3.1"
   integrationTestImplementation "org.testcontainers:kafka:1.17.5"
 
   // Integration Testing

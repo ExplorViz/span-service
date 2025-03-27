@@ -5,9 +5,13 @@ import java.util.UUID;
 import net.explorviz.avro.Span;
 import net.explorviz.span.hash.HashHelper;
 import org.apache.kafka.streams.kstream.ValueMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SpanConverter.class);
 
   @Override
   public PersistenceSpan apply(final Span span) {
@@ -16,7 +20,11 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     // TODO: Remove invalid UUID hotfix
     UUID landscapeToken = PersistenceSpan.DEFAULT_UUID;
     if (!"mytokenvalue".equals(landscapeTokenRaw)) {
-      landscapeToken = UUID.fromString(landscapeTokenRaw);
+        try {
+          landscapeToken = UUID.fromString(landscapeTokenRaw);
+        } catch(final IllegalArgumentException ignored) {
+          LOGGER.error("Invalid landscape token: {}", landscapeTokenRaw);
+        }
     }
 
     final long startTime = span.getStartTimeEpochMilli();

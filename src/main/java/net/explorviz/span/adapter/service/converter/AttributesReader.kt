@@ -1,18 +1,18 @@
-package net.explorviz.adapter.service.converter
+package net.explorviz.span.adapter.service.converter
 
 import io.opentelemetry.proto.common.v1.AnyValue
 import io.opentelemetry.proto.trace.v1.Span
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_APP_INSTANCE_ID
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_APP_LANG
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_APP_NAME
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_CLASS_FQN
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_FQN
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_GIT_COMMIT_CHECKSUM
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_HOST_IP
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_HOST_NAME
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_LANDSCAPE_SECRET
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_LANDSCAPE_TOKEN
-import net.explorviz.adapter.service.converter.DefaultAttributeValues.DEFAULT_PACKAGE_NAME
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_APP_INSTANCE_ID
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_APP_LANG
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_APP_NAME
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_CLASS_FQN
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_FQN
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_GIT_COMMIT_CHECKSUM
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_HOST_IP
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_HOST_NAME
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_LANDSCAPE_SECRET
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_LANDSCAPE_TOKEN
+import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_PACKAGE_NAME
 import org.apache.commons.lang3.StringUtils
 
 /** Reads the attributes of a [Span]. */

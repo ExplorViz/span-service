@@ -9,7 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Inject
 import java.util.concurrent.atomic.AtomicInteger
-import net.explorviz.adapter.service.converter.SpanConverterImpl
+import net.explorviz.span.adapter.service.converter.SpanConverterImpl
 import net.explorviz.avro.EventType
 import net.explorviz.avro.TokenEvent
 import net.explorviz.span.adapter.service.validation.SpanValidator
@@ -59,11 +59,11 @@ class TopologyProducer {
     @Inject lateinit var spanConverter: SpanConverterImpl
 
     @Inject
-    lateinit var persistenceSpanConverter: /* default */SpanConverter
+    lateinit var persistenceSpanConverter: SpanConverter
 
 
     @Inject
-    lateinit var persistenceProcessor: /* default */PersistenceSpanProcessor
+    lateinit var persistenceProcessor: PersistenceSpanProcessor
 
 
     @Produces
@@ -108,7 +108,7 @@ class TopologyProducer {
             }
 
         // Map to our more space-efficient PersistenceSpan format
-        // Combine with previous step
+        // ToDo: Combine with previous step
         val persistenceStream: KStream<String, PersistenceSpan> = explorvizSpanStream.mapValues(
             this.persistenceSpanConverter,
         )
@@ -118,12 +118,6 @@ class TopologyProducer {
                 span,
             )
         }
-
-
-        // Forward Spans (general purpose event)
-        // TODO: Send to interal span service
-        // explorvizSpanStream.to(spansOutTopic, Produced.with(Serdes.String(), spanAvroSerde))
-
         // END Conversion Stream
 
         // BEGIN Token Stream
@@ -141,8 +135,8 @@ class TopologyProducer {
                 .withKeySerde(Serdes.String())
                 .withValueSerde(tokenEventAvroSerde),
         )
-
         // END Token Stream
+
         return builder.build()
     }
 

@@ -1,4 +1,4 @@
-package net.explorviz.adapter.service.converter
+package net.explorviz.span.adapter.service.converter
 
 import com.google.common.io.BaseEncoding
 

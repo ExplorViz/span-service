@@ -1,4 +1,4 @@
-package net.explorviz.adapter.service.converter
+package net.explorviz.span.adapter.service.converter
 
 /** Contains constants for missing attribute values of spans. */
 object DefaultAttributeValues {

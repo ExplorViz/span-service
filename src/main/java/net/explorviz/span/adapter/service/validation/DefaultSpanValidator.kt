@@ -1,10 +1,10 @@
-package net.explorviz.adapter.span.service.validation
+package net.explorviz.span.adapter.span.service.validation
 
 import io.opentelemetry.proto.trace.v1.Span
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import java.time.DateTimeException
-import net.explorviz.adapter.service.converter.AttributesReader
+import net.explorviz.span.adapter.service.converter.AttributesReader
 import net.explorviz.span.adapter.service.TokenService
 import net.explorviz.span.adapter.service.validation.SpanValidator
 import org.eclipse.microprofile.config.inject.ConfigProperty
