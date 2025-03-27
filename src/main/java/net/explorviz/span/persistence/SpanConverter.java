@@ -20,11 +20,11 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     // TODO: Remove invalid UUID hotfix
     UUID landscapeToken = PersistenceSpan.DEFAULT_UUID;
     if (!"mytokenvalue".equals(landscapeTokenRaw)) {
-        try {
-          landscapeToken = UUID.fromString(landscapeTokenRaw);
-        } catch(final IllegalArgumentException ignored) {
-          LOGGER.error("Invalid landscape token: {}", landscapeTokenRaw);
-        }
+      try {
+        landscapeToken = UUID.fromString(landscapeTokenRaw);
+      } catch (final IllegalArgumentException ignored) {
+        LOGGER.error("Invalid landscape token: {}", landscapeTokenRaw);
+      }
     }
 
     final long startTime = span.getStartTimeEpochMilli();
