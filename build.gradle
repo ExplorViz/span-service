@@ -33,6 +33,10 @@ dependencies {
   // Needed for scheduled jobs
   implementation 'io.quarkus:quarkus-scheduler'
 
+  implementation "io.quarkus:quarkus-grpc"
+
+  implementation "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha"
+
   // Quarkus Cassandra Platform + DataStax Cassandra Driver
   implementation enforcedPlatform("${quarkusPlatformGroupId}:quarkus-cassandra-bom:${quarkusPlatformVersion}")
   implementation 'com.datastax.oss.quarkus:cassandra-quarkus-client'
@@ -59,6 +63,7 @@ dependencies {
   testImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
   integrationTestImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
   testImplementation "org.testcontainers:kafka:1.17.5"
+  testImplementation group: "org.apache.kafka", name: "kafka-streams-test-utils", version: "3.3.1"
   integrationTestImplementation "org.testcontainers:kafka:1.17.5"
 
   // Integration Testing
