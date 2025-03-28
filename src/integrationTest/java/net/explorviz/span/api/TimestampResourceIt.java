@@ -42,7 +42,7 @@ public class TimestampResourceIt {
     final UUID uuidExpected = UUID.randomUUID();
 
     final PersistenceSpan differentTokenSpan = new PersistenceSpan(UUID.randomUUID(), gitCommitChecksum, "123L", "",
-        "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", 0,
+        "1L", startEarly, endEarly, "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class.myMethod()", "847",
         "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
@@ -51,17 +51,17 @@ public class TimestampResourceIt {
 
     final PersistenceSpan firstOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "", "1L",
         startEarly, endEarly,
-        "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847",
+        "nodeIp", "host-name", "app-name", "java", "0", "net.explorviz.Class." + duplicateMethodName, "847",
         "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan secondOccurenceSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "", "3L",
         startLate, endLate,
-        "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class." + duplicateMethodName, "847",
+        "nodeIp", "host-name", "app-name", "java", "0", "net.explorviz.Class." + duplicateMethodName, "847",
         "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan otherSpan = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L", "",
         startExpected,
-        endExpected, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class." + otherMethodName,
+        endExpected, "nodeIp", "host-name", "app-name", "java", "0", "net.explorviz.Class." + otherMethodName,
         "321", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     spanProcessor.accept(differentTokenSpan);
@@ -115,7 +115,7 @@ public class TimestampResourceIt {
     final UUID uuidExpected = UUID.randomUUID();
 
     final PersistenceSpan firstSpanOfFirstBucket = new PersistenceSpan(uuidExpected, gitCommitChecksum, "0123L", "",
-        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class.myMethod()", "847", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final String duplicateMethodName = "myMethodName()";
@@ -124,18 +124,18 @@ public class TimestampResourceIt {
     final PersistenceSpan firstSpanOfSecondBuckec = new PersistenceSpan(uuidExpected, gitCommitChecksum, "123L", "",
         "1L", secondBucketStart,
         secondBucketEnd,
-        "nodeIp", "host-name", "app-name", "java", 0,
+        "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + duplicateMethodName, "847", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan firstSpanOfThirdBucket = new PersistenceSpan(uuidExpected, gitCommitChecksum, "789L", "",
         "3L", thirdBucketStart,
         thirdBucketEnd,
-        "nodeIp", "host-name", "app-name", "java", 0,
+        "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + duplicateMethodName, "847", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan secondSpanOfSecondBucket = new PersistenceSpan(uuidExpected, gitCommitChecksum, "456L", "0L",
         "", secondBucketStart,
-        secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        secondBucketEnd, "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + otherMethodName,
         "321", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
@@ -180,7 +180,7 @@ public class TimestampResourceIt {
     final String expectedCommit = "testCommit";
 
     final PersistenceSpan firstSpanOfFirstBucket = new PersistenceSpan(uuidExpected, "notTestCommit-1", "0123L", "",
-        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class.myMethod()", "847",
         "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
@@ -190,20 +190,20 @@ public class TimestampResourceIt {
     final PersistenceSpan firstSpanOfSecondBuckec = new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L",
         secondBucketStart,
         secondBucketEnd,
-        "nodeIp", "host-name", "app-name", "java", 0,
+        "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + duplicateMethodName, "847",
         "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan firstSpanOfThirdBucket = new PersistenceSpan(uuidExpected, "notTestCommit-2", "789L", "",
         "3L", thirdBucketStart,
         thirdBucketEnd,
-        "nodeIp", "host-name", "app-name", "java", 0,
+        "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + duplicateMethodName, "847",
         "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan secondSpanOfSecondBucket = new PersistenceSpan(uuidExpected, "notTestCommit-2", "456L", "0L",
         "", secondBucketStart,
-        secondBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        secondBucketEnd, "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + otherMethodName,
         "321", "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
@@ -244,7 +244,7 @@ public class TimestampResourceIt {
     final String expectedCommit = "testCommit";
 
     final PersistenceSpan firstSpanOfFirstBucket = new PersistenceSpan(uuidExpected, expectedCommit, "0123L", "",
-        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", 0,
+        "1L", firstBucketStart, firstBucketEnd, "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class.myMethod()", "847",
         "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
@@ -254,20 +254,20 @@ public class TimestampResourceIt {
     final PersistenceSpan firstSpanOfSecondBuckec = new PersistenceSpan(uuidExpected, expectedCommit, "123L", "", "1L",
         secondBucketStart,
         secondBucketEnd,
-        "nodeIp", "host-name", "app-name", "java", 0,
+        "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + duplicateMethodName, "847",
         "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan firstSpanOfThirdBucket = new PersistenceSpan(uuidExpected, expectedCommit, "789L", "", "3L",
         thirdBucketStart,
         thirdBucketEnd,
-        "nodeIp", "host-name", "app-name", "java", 0,
+        "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + duplicateMethodName, "847",
         "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");
 
     final PersistenceSpan secondSpanOfSecondBucket = new PersistenceSpan(uuidExpected, expectedCommit, "456L", "0L", "",
         secondBucketStart + 1000,
-        secondBucketEnd + 1000, "nodeIp", "host-name", "app-name", "java", 0,
+        secondBucketEnd + 1000, "nodeIp", "host-name", "app-name", "java", "0",
         "net.explorviz.Class." + otherMethodName,
         "321",
         "iamnotapod", "iamnotanode", "iamnotanamespace", "iamnotadeployment");

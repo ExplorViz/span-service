@@ -32,7 +32,7 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
     final String nodeIpAddress = span.getHostIpAddress();
     final String nodeHostName = span.getHostname();
     final String applicationName = span.getAppName();
-    final int applicationInstance = Integer.parseInt(span.getAppInstanceId());
+    final String applicationInstance = span.getAppInstanceId();
     final String applicationLanguage = span.getAppLanguage();
     final String methodFqn = span.getFullyQualifiedOperationName();
     final String k8sPodName = span.getK8sPodName();

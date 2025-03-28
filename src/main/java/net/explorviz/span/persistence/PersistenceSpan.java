@@ -14,7 +14,7 @@ public record PersistenceSpan(
     String hostName,
     String applicationName,
     String applicationLanguage,
-    int applicationInstance,
+    String applicationInstance,
     String methodFqn,
     String methodHash,
     String k8sPodName,

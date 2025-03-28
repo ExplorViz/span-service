@@ -45,16 +45,16 @@ public class TraceLoaderIt {
 
     final PersistenceSpan earlySpan = new PersistenceSpan(landscapeToken, gitCommitChecksum, "123L", "", "1L",
         startEarly,
-        endEarly, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        endEarly, "nodeIp", "host-name", "app-name", "java", "0", "net.explorviz.Class.myMethod()",
         "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan expectedSpan = new PersistenceSpan(landscapeToken, gitCommitChecksum, "456L", "", "2L",
         startExpected,
-        endExpected, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        endExpected, "nodeIp", "host-name", "app-name", "java", "0", "net.explorviz.Class.myMethod()",
         "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     final PersistenceSpan lateSpan = new PersistenceSpan(landscapeToken, gitCommitChecksum, "789L", "", "3L", startLate,
-        endLate, "nodeIp", "host-name", "app-name", "java", 0, "net.explorviz.Class.myMethod()",
+        endLate, "nodeIp", "host-name", "app-name", "java", "0", "net.explorviz.Class.myMethod()",
         "847", "iamapod", "iamanode", "iamanamespace", "iamadeployment");
 
     spanProcessor.accept(earlySpan);

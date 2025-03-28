@@ -16,7 +16,7 @@ private val HIGHWAY_HASH_KEY = longArrayOf(
     landscapeToken: UUID,
     nodeIpAddress: String,
     applicationName: String,
-    applicationInstance: Long,
+    applicationInstance: String,
     methodFqn: String,
     k8sPodName: String?,
     k8sNodeName: String?,
@@ -29,7 +29,7 @@ private val HIGHWAY_HASH_KEY = longArrayOf(
   hash.update(
       landscapeToken.mostSignificantBits,
       landscapeToken.leastSignificantBits,
-      applicationInstance,
+      0L,
       0L
   )
 
