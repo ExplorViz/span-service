@@ -105,23 +105,23 @@ public class LandscapeResource {
 
     if(from != null && to != null) {
       final Multi<Timestamp> allTimestamps = this.timestampLoader.loadAllTimestampsForToken(parseUuid(token), commit);
-      final long tenSecondBucketFrom = from - (from % 10_000); // from could be timestamp of a savepoint
+      final long tenSecondBucketFrom = from - (from % 10_000); // 'from' could be a timestamp of a savepoint, therefore we have to round it down
       // Transform Multi<Timestamp> to Multi<Trace> with filtered spans
       final Multi<Trace> tracesWithSpansUnfiltered = allTimestamps.select()
-          .where(timestamp -> timestamp.epochMilli() >= tenSecondBucketFrom && timestamp.epochMilli() <= to)
+          .where(timestamp -> timestamp.epochMilli() >= tenSecondBucketFrom && timestamp.epochMilli() < to) // all traces within the buckets that fulfill the time range
           .onItem().transformToMultiAndConcatenate(
             timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochMilli())
           );
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
         final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() > from && span.startTime() <= to)
+            .filter(span -> span.startTime() >= from && span.startTime() < to) // now we really filter from 'from' to 'to' ('to' being exclusive)
             .collect(Collectors.toList());
         Trace traceWithSpansFiltered = new Trace(
           trace.landscapeToken(), trace.traceId(), trace.gitCommitChecksum(), trace.startTime(), 
           trace.endTime(), trace.duration(), trace.overallRequestCount(), 
           trace.traceCount(), filteredSpans);
         return traceWithSpansFiltered; // TODO: deal with traces with empty span list after filtering
-        // TODO: how does frontend deal with a span list that may not have a parent spans included
+        // TODO: how does frontend deal with a span list that may not have a parent spans included (might only happen if we select a timestamp of a savepoint)
       });
       //allTimestamps.collect().asList()
     }
