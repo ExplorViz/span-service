@@ -120,6 +120,7 @@ public class LandscapeResource {
           trace.landscapeToken(), trace.traceId(), trace.gitCommitChecksum(), trace.startTime(), 
           trace.endTime(), trace.duration(), trace.overallRequestCount(), 
           trace.traceCount(), filteredSpans);
+        // if our filtered span list is not empty but does not have a parent span, we still include it
         return traceWithSpansFiltered; // TODO: deal with traces with empty span list after filtering
         // TODO: how does frontend deal with a span list that may not have a parent spans included (might only happen if we select a timestamp of a savepoint)
       });
