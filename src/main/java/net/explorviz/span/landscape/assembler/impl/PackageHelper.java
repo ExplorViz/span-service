@@ -85,7 +85,8 @@ public final class PackageHelper {
     if (packages == null || packages.length == 0) {
       return null;
     }
-    final Package rootPackage = new Package(packages[0], level, new ArrayList<>(), new ArrayList<>());
+    final Package rootPackage = new Package(packages[0], level, new ArrayList<>(),
+        new ArrayList<>());
     Package currentPkg = rootPackage;
     Collection<Package> current;
     for (int i = 1; i < packages.length; i++) {
