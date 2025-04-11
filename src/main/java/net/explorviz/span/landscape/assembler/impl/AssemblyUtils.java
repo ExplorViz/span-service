@@ -60,7 +60,7 @@ public final class AssemblyUtils {
    * @return an optional that contains the class if it is included in the package, and is empty
    *     otherwise
    */
-  public static Optional<Class> findClazz(final Package pkg, final String className) {
+  public static Optional<Class> findClass(final Package pkg, final String className) {
     return pkg.classes().stream().filter(c -> c.name().equals(className)).findAny();
   }
 }

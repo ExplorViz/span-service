@@ -168,12 +168,13 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
 
   private String[] getPackagesForRecord(final LandscapeRecord record, final Application app) {
     // Merge package structure
+    // This array of packages represents one path in the component tree
     final String[] packages = record.packageName().split("\\.");
     final int unknownPkgIndex = PackageHelper.lowestPackageIndex(app, packages);
 
     if (unknownPkgIndex < packages.length) {
       final String[] pksToInsert = Arrays.copyOfRange(packages, unknownPkgIndex, packages.length);
-      final Package rootToInsert = PackageHelper.toHierarchy(pksToInsert);
+      final Package rootToInsert = PackageHelper.toHierarchy(pksToInsert, unknownPkgIndex);
       // Merge missing packages
       if (unknownPkgIndex == 0) {
         // Add new root package
@@ -192,11 +193,12 @@ public class DefaultLandscapeAssembler implements LandscapeAssembler {
   private Class getClassForRecord(final LandscapeRecord record, final Package leafPkg) {
     // Get or creat class
     final Class cls;
-    final Optional<Class> foundCls = AssemblyUtils.findClazz(leafPkg, record.className());
+    final Optional<Class> foundCls = AssemblyUtils.findClass(leafPkg, record.className());
     if (foundCls.isPresent()) {
       cls = foundCls.get();
     } else {
-      cls = new Class(record.className(), new ArrayList<>());
+      int classLevel = leafPkg.level() + 1;
+      cls = new Class(record.className(), classLevel, new ArrayList<>());
       leafPkg.classes().add(cls);
     }
 
