@@ -114,15 +114,13 @@ public class LandscapeResource {
           );
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
         final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() >= from && span.startTime() < to) // now we really filter from 'from' to 'to' ('to' being exclusive)
-            .collect(Collectors.toList());
+            .filter(span -> span.startTime() < to) // we still accept "span.startTime() < from" being in the list, because it might be a parent span of a child span that is in the time range
+            .collect(Collectors.toList());         // the frontend will show the parent span as well, but it will be transparent
         Trace traceWithSpansFiltered = new Trace(
           trace.landscapeToken(), trace.traceId(), trace.gitCommitChecksum(), trace.startTime(), 
           trace.endTime(), trace.duration(), trace.overallRequestCount(), 
           trace.traceCount(), filteredSpans);
-        // if our filtered span list is not empty but does not have a parent span, we still include it
-        return traceWithSpansFiltered; // TODO: deal with traces with empty span list after filtering
-        // TODO: how does frontend deal with a span list that may not have a parent spans included (might only happen if we select a timestamp of a savepoint)
+        return traceWithSpansFiltered; 
       });
       //allTimestamps.collect().asList()
     }
