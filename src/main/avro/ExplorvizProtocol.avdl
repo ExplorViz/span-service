@@ -14,6 +14,9 @@ protocol ExplorvizProtocol {
         string secret;
         long created;
         string alias;
+        boolean isRequestedFromVSCodeExtension = false;
+		string projectName = "";
+		string commitId = "";
     }
 
     record TokenEvent {
