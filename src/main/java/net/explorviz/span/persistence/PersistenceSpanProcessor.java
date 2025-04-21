@@ -118,7 +118,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         insertSpanStructureStatement.bind(span.landscapeToken(), span.methodHash(),
             span.nodeIpAddress(), span.hostName(), span.applicationName(),
             span.applicationLanguage(),
-            span.applicationInstance(), span.methodFqn(), span.startTime(),
+            Integer.toString(span.applicationInstance()), // TODO: cassandra init from deployment is deleted, therefore the toString conversion is not needed anymore
+            span.methodFqn(), span.startTime(),
             span.k8sPodName(), span.k8sNodeName(), span.k8sNamespace(), span.k8sDeploymentName(),
             Instant.now().toEpochMilli());
 
