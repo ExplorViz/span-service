@@ -110,12 +110,12 @@ public class LandscapeResource {
       final Multi<Trace> tracesWithSpansUnfiltered = allTimestamps.select()
           .where(timestamp -> timestamp.epochMilli() >= tenSecondBucketFrom && timestamp.epochMilli() < to) // all traces within the buckets that fulfill the time range
           .onItem().transformToMultiAndConcatenate(
-            timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochMilli())
+            timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochMilli()) // multiple traces may be in the same bucket
           );
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
         final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() < to) // we still accept "span.startTime() < from" being in the list, because it might be a parent span of a child span that is in the time range
-            .collect(Collectors.toList());         // the frontend will show the parent span as well, but it will be transparent
+            .filter(span -> span.startTime() < to) // In the case of from being a timestamp from a savepoint (i.e. from % 10_000 !== 0) we still accept "span.startTime() < from" being in the list, because it might be a parent span of a child span that is in the time range
+            .collect(Collectors.toList());         // the frontend will show the parent span as well, but it will be transparent if it is not in the time range
         Trace traceWithSpansFiltered = new Trace(
           trace.landscapeToken(), trace.traceId(), trace.gitCommitChecksum(), trace.startTime(), 
           trace.endTime(), trace.duration(), trace.overallRequestCount(), 
