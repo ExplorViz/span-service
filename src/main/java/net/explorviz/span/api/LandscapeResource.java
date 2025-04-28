@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.explorviz.span.landscape.Landscape;
 import net.explorviz.span.landscape.assembler.LandscapeAssembler;
@@ -106,20 +107,36 @@ public class LandscapeResource {
     if(from != null && to != null) {
       final Multi<Timestamp> allTimestamps = this.timestampLoader.loadAllTimestampsForToken(parseUuid(token), commit);
       final long tenSecondBucketFrom = from - (from % 10_000); // 'from' could be a timestamp of a savepoint, therefore we have to round it down
+      final boolean isSavepoint = tenSecondBucketFrom != from;
       // Transform Multi<Timestamp> to Multi<Trace> with filtered spans
       final Multi<Trace> tracesWithSpansUnfiltered = allTimestamps.select()
           .where(timestamp -> timestamp.epochMilli() >= tenSecondBucketFrom && timestamp.epochMilli() < to) // all traces within the buckets that fulfill the time range
           .onItem().transformToMultiAndConcatenate(
             timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochMilli()) // multiple traces may be in the same bucket
           ).select().where(trace -> trace.startTime() < to);
+
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
         final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() < to) // In the case of from being a timestamp from a savepoint (i.e. from % 10_000 !== 0) we still accept "span.startTime() < from" being in the list, because it might be a parent span of a child span that is in the time range
-            .collect(Collectors.toList());         // the frontend will show the parent span as well, but it will be transparent if it is not in the time range
+            .filter(span -> span.startTime() < to && span.startTime() >= from)
+            .collect(Collectors.toList());
+        final List<String> filteredSpanIds = filteredSpans.stream()
+            .map(span -> span.spanId())
+            .collect(Collectors.toList());
+  
+        final List<Span> orphanSpans = filteredSpans.stream()
+             .filter(span -> !filteredSpanIds.contains(span.parentSpanId()))
+             .map(orphan -> new Span(orphan.spanId(), "", orphan.startTime(), orphan.endTime(), orphan.methodHash()))
+             .collect(Collectors.toList());
+        final List<Span> spansWithParents = filteredSpans.stream()
+              .filter(span -> filteredSpanIds.contains(span.parentSpanId()))
+              .collect(Collectors.toList());
+        List<Span> merged = Stream.concat(orphanSpans.stream(), spansWithParents.stream())
+              .collect(Collectors.toList());
+
         Trace traceWithSpansFiltered = new Trace(
           trace.landscapeToken(), trace.traceId(), trace.gitCommitChecksum(), trace.startTime(), 
           trace.endTime(), trace.duration(), trace.overallRequestCount(), 
-          trace.traceCount(), filteredSpans);
+          trace.traceCount(), merged);
         return traceWithSpansFiltered; 
       });
       //allTimestamps.collect().asList()
