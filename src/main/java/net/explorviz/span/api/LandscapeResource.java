@@ -94,7 +94,7 @@ public class LandscapeResource {
   @GET
   @Path("/{token}/dynamic")
   public Multi<Trace> getDynamic(@PathParam("token") final String token,
-      @QueryParam("from") final Long from, @QueryParam("to") final Long to, 
+      @QueryParam("from") final Long from, @QueryParam("exact") final Long exact,  @QueryParam("to") final Long to, 
       @QueryParam("commit") final Optional<String> commit) {
 
     if (!isTimeVerificationEnabled || (from == null && to == null)) {
@@ -106,18 +106,17 @@ public class LandscapeResource {
 
     if(from != null && to != null) {
       final Multi<Timestamp> allTimestamps = this.timestampLoader.loadAllTimestampsForToken(parseUuid(token), commit);
-      final long tenSecondBucketFrom = from - (from % 10_000); // 'from' could be a timestamp of a savepoint, therefore we have to round it down
-      final boolean isSavepoint = tenSecondBucketFrom != from;
+      //final boolean isSavepoint = from != exact;
       // Transform Multi<Timestamp> to Multi<Trace> with filtered spans
       final Multi<Trace> tracesWithSpansUnfiltered = allTimestamps.select()
-          .where(timestamp -> timestamp.epochMilli() >= tenSecondBucketFrom && timestamp.epochMilli() < to) // all traces within the buckets that fulfill the time range
+          .where(timestamp -> timestamp.epochMilli() >= from && timestamp.epochMilli() < to) // all traces within the buckets that fulfill the time range
           .onItem().transformToMultiAndConcatenate(
             timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochMilli()) // multiple traces may be in the same bucket
           ).select().where(trace -> trace.startTime() < to);
 
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
         final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() < to && span.startTime() >= from)
+            .filter(span -> span.startTime() < to && span.startTime() >= exact)
             .collect(Collectors.toList());
         final List<String> filteredSpanIds = filteredSpans.stream()
             .map(span -> span.spanId())
