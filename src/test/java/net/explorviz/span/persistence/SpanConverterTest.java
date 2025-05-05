@@ -41,7 +41,7 @@ public class SpanConverterTest {
         span.getParentSpanId(),
         span.getTraceId(), span.getStartTimeEpochMilli(), span.getEndTimeEpochMilli(),
         span.getHostIpAddress(), span.getHostname(), span.getAppName(), span.getAppLanguage(),
-        Integer.valueOf(span.getAppInstanceId()),
+        span.getAppInstanceId(),
         span.getFullyQualifiedOperationName(),
         span.getHashCode(),
         span.getK8sPodName(),

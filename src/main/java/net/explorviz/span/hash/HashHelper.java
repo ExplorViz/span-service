@@ -14,14 +14,16 @@ public final class HashHelper {
   }
 
   public static String calculateSpanHash(final UUID landscapeToken, final String nodeIpAddress,
-      final String applicationName, final int applicationInstance, final String methodFqn,
+      final String applicationName, final String applicationInstance, final String methodFqn,
       final String k8sPodName, final String k8sNodeName, final String k8sNamespace,
       final String k8sDeploymentName) {
     final HighwayHash hash = new HighwayHash(HIGHWAY_HASH_KEY);
 
+    final int instance = Integer.parseInt(applicationInstance);
+
     // TODO: Fill with IPv6 address bits (Convert IPv4 to IPv4-in-IPv6 representation)
     hash.update(landscapeToken.getMostSignificantBits(), landscapeToken.getLeastSignificantBits(),
-        applicationInstance, 0L);
+    instance, 0L);
 
     String builder = applicationName + ';' + nodeIpAddress + ';' + methodFqn;
     if (k8sPodName != null && !k8sPodName.isEmpty()) {

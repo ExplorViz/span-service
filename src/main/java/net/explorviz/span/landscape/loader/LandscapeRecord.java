@@ -12,7 +12,7 @@ public record LandscapeRecord(
     String hostName,
     String applicationName,
     String applicationLanguage,
-    int applicationInstance,
+    String applicationInstance,
     String packageName,
     String className,
     String methodName,
@@ -29,7 +29,7 @@ public record LandscapeRecord(
     final String hostName = row.getString("host_name");
     final String applicationName = row.getString("application_name");
     final String applicationLanguage = row.getString("application_language");
-    final int applicationInstance = Integer.parseInt(row.getString("application_instance")); // cassandra init from deployment is deleted, therefore the toString conversion is not needed anymore
+    final String applicationInstance = row.getString("application_instance"); // cassandra init from deployment is deleted, therefore the toString conversion is not needed anymore
     final String methodFqn = row.getString("method_fqn");
     final long timeSeen = row.getLong("time_seen");
     final String k8sPodName = row.getString("k8s_pod_name");
