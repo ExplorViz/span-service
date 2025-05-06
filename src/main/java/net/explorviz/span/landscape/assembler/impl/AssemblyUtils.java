@@ -42,9 +42,9 @@ public final class AssemblyUtils {
    * @return an optional that contains the app if it is included in the node, and is empty otherwise
    */
   public static Optional<Application> findApplication(final Node node, final String name,
-      final int instance) {
+      final String instance) {
     for (final Application a : node.applications()) {
-      if (a.instanceId() == instance && a.name().equals(name)) {
+      if (a.instanceId().equals(instance) && a.name().equals(name)) {
         return Optional.of(a);
       }
     }
@@ -60,7 +60,7 @@ public final class AssemblyUtils {
    * @return an optional that contains the class if it is included in the package, and is empty
    *     otherwise
    */
-  public static Optional<Class> findClazz(final Package pkg, final String className) {
+  public static Optional<Class> findClass(final Package pkg, final String className) {
     return pkg.classes().stream().filter(c -> c.name().equals(className)).findAny();
   }
 }

@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS explorviz.span_structure
   host_name            text,
   application_name     text,
   application_language text,
-  application_instance int,
+  application_instance text,
   method_fqn           text,
   time_seen            bigint,
   k8s_pod_name         text,

@@ -28,7 +28,7 @@ public class SpanConverterTest {
         .setAppInstanceId("42")
         .setAppLanguage("java")
         .setFullyQualifiedOperationName("asd.bfd")
-        .setHashCode("-909819732013219679")
+        .setHashCode("6062567511045490928")
         .setStartTimeEpochMilli(1668069002431000000L)
         .setEndTimeEpochMilli(1668072086000000000L)
         .build();

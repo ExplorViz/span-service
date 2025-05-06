@@ -78,21 +78,23 @@ public final class PackageHelper {
    * Creates a hierarchy of {@link Package}s out of a branch given as an array of package names.
    *
    * @param packages the package names to create the hierarchy out of
+   * @param level the level of the root package in the application package hierarchy
    * @return the root package of the hierarchy
    */
-  public static Package toHierarchy(final String[] packages) {
+  public static Package toHierarchy(final String[] packages, int level) {
     if (packages == null || packages.length == 0) {
       return null;
     }
-    final Package root = new Package(packages[0], new ArrayList<>(), new ArrayList<>());
-    Package currentPkg = root;
+    final Package rootPackage = new Package(packages[0], level, new ArrayList<>(),
+        new ArrayList<>());
+    Package currentPkg = rootPackage;
     Collection<Package> current;
     for (int i = 1; i < packages.length; i++) {
       current = currentPkg.subPackages();
-      currentPkg = new Package(packages[i], new ArrayList<>(), new ArrayList<>());
+      currentPkg = new Package(packages[i], level + i, new ArrayList<>(), new ArrayList<>());
       current.add(currentPkg);
     }
-    return root;
+    return rootPackage;
   }
 
   /**
