@@ -41,6 +41,9 @@ dependencies {
   implementation enforcedPlatform("${quarkusPlatformGroupId}:quarkus-cassandra-bom:${quarkusPlatformVersion}")
   implementation 'com.datastax.oss.quarkus:cassandra-quarkus-client'
 
+  // Quarkus Neo4j driver
+  implementation 'io.quarkiverse.neo4j:quarkus-neo4j:6.0.1'
+
   // Kafka Streams + Confluent Schema Registry + Avro (de)serializer
   implementation 'io.quarkus:quarkus-kafka-streams'
   implementation 'io.quarkus:quarkus-confluent-registry-avro'
