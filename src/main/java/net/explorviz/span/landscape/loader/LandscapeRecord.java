@@ -1,8 +1,8 @@
 package net.explorviz.span.landscape.loader;
 
-import com.datastax.oss.driver.api.core.cql.Row;
 import java.util.Arrays;
 import java.util.UUID;
+import org.neo4j.driver.Record;
 
 // TODO: Unify PersistenceSpan and LandscapeRecord? (move FQN parsing into assembler?)
 public record LandscapeRecord(
@@ -22,20 +22,20 @@ public record LandscapeRecord(
     String k8sDeploymentName,
     long timeSeen) {
 
-  public static LandscapeRecord fromRow(final Row row) {
-    final UUID landscapeToken = row.getUuid("landscape_token");
-    final String methodHash = row.getString("method_hash");
-    final String nodeIpAddress = row.getString("node_ip_address");
-    final String hostName = row.getString("host_name");
-    final String applicationName = row.getString("application_name");
-    final String applicationLanguage = row.getString("application_language");
-    final String applicationInstance = row.getString("application_instance");
-    final String methodFqn = row.getString("method_fqn");
-    final long timeSeen = row.getLong("time_seen");
-    final String k8sPodName = row.getString("k8s_pod_name");
-    final String k8sNodeName = row.getString("k8s_node_name");
-    final String k8sNamespace = row.getString("k8s_namespace");
-    final String k8sDeploymentName = row.getString("k8s_deployment_name");
+  public static LandscapeRecord fromRecord(final Record record) {
+    final UUID landscapeToken = UUID.fromString(record.get("landscape_token").asString());
+    final String methodHash = record.get("method_hash").asString();
+    final String nodeIpAddress = record.get("node_ip_address").asString();
+    final String hostName = record.get("host_name").asString();
+    final String applicationName = record.get("application_name").asString();
+    final String applicationLanguage = record.get("application_language").asString();
+    final String applicationInstance = record.get("application_instance").asString();
+    final String methodFqn = record.get("method_fqn").asString();
+    final long timeSeen = record.get("time_seen").asLong();
+    final String k8sPodName = record.get("k8s_pod_name").asString();
+    final String k8sNodeName = record.get("k8s_node_name").asString();
+    final String k8sNamespace = record.get("k8s_namespace").asString();
+    final String k8sDeploymentName = record.get("k8s_deployment_name").asString();
 
     // TODO: Error handling
     /*

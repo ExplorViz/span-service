@@ -1,9 +1,9 @@
 package net.explorviz.span.trace;
 
-import com.datastax.oss.driver.api.core.cql.Row;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.neo4j.driver.Record;
 
 public record Trace(
     UUID landscapeToken,
@@ -17,13 +17,13 @@ public record Trace(
     List<Span> spanList
 ) {
 
-  public static Trace fromRow(final Row row) {
-    final UUID landscapeToken = row.getUuid("landscape_token");
-    final String traceId = row.getString("trace_id");
-    final String gitCommitChecksum = row.getString("git_commit_checksum");
+  public static Trace fromRecord(final Record record) {
+    final UUID landscapeToken = UUID.fromString(record.get("landscape_token").asString());
+    final String traceId = record.get("trace_id").asString();
+    final String gitCommitChecksum = record.get("git_commit_checksum").asString();
     // TODO: Remove millisecond/nanosecond mismatch hotfix
-    final long startTime = row.getLong("start_time");
-    final long endTime = row.getLong("end_time");
+    final long startTime = record.get("start_time").asLong();
+    final long endTime = record.get("end_time").asLong();
     final long duration = endTime - startTime;
     final int overallRequestCount = 1;
     final int traceCount = 1;

@@ -1,7 +1,7 @@
 package net.explorviz.span.trace;
 
-import com.datastax.oss.driver.api.core.cql.Row;
 import java.util.UUID;
+import org.neo4j.driver.Record;
 
 public record Span(
     //UUID landscapeToken, // TODO: Deviation from frontend, expects `String landscapeToken`
@@ -13,14 +13,14 @@ public record Span(
     String methodHash
 ) {
 
-  public static Span fromRow(final Row row) {
-    //final UUID landscapeToken = row.getUuid("landscape_token");
-    //final String traceId = row.getString("trace_id");
-    final String spanId = row.getString("span_id");
-    final String parentSpanId = row.getString("parent_span_id");
-    final long startTime = row.getLong("start_time");
-    final long endTime = row.getLong("end_time");
-    final String methodHash = row.getString("method_hash");
+  public static Span fromRecord(final Record record) {
+    // final UUID landscapeToken = UUID.fromString(record.get("landscape_token").asString());
+    // final String traceId = record.get("trace_id").asString();
+    final String spanId = record.get("span_id").asString();
+    final String parentSpanId = record.get("parent_span_id").asString();
+    final long startTime = record.get("start_time").asLong();
+    final long endTime = record.get("end_time").asLong();
+    final String methodHash = record.get("method_hash").asString();
 
     return new Span(spanId, parentSpanId, startTime, endTime, methodHash);
   }

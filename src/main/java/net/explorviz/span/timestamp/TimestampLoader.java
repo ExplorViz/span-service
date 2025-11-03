@@ -1,12 +1,19 @@
 package net.explorviz.span.timestamp;
 
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.quarkus.runtime.api.session.QuarkusCqlSession;
 import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import net.explorviz.span.landscape.loader.LandscapeLoader;
+import net.explorviz.span.landscape.loader.LandscapeRecord;
+
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.reactive.ReactiveResult;
+import org.neo4j.driver.reactive.ReactiveSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,33 +22,35 @@ public class TimestampLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TimestampLoader.class);
 
-  private final QuarkusCqlSession session;
+  private static final String selectAllTimestampsForToken = """
+      MATCH (sc:SpanCount)
+      WHERE sc.landscape_token = $landscape_token
+      RETURN sc;""";
 
-  private final PreparedStatement selectAllTimestampsForToken;
-  private final PreparedStatement selectAllTimestampsForTokenAndCommit;
-  private final PreparedStatement selectNewerTimestampsForToken;
-  private final PreparedStatement selectNewerTimestampsForTokenAndCommit;
+  private static final String selectAllTimestampsForTokenAndCommit = """
+      MATCH (sc:SpanCountCommit)
+      WHERE sc.landscape_token = $landscape_token
+        AND sc.git_commit_checksum = $git_commit_checksum
+      RETURN sc;""";
+
+  private static final String selectNewerTimestampsForToken = """
+      MATCH (sc:SpanCount)
+      WHERE sc.landscape_token = $landscape_token
+        AND sc.tenth_second_epoch > $newest
+      RETURN sc;""";
+
+  private static final String selectNewerTimestampsForTokenAndCommit = """
+      MATCH (sc:SpanCountCommit)
+      WHERE sc.landscape_token = $landscape_token
+        AND sc.git_commit_checksum = $git_commit_checksum
+        AND sc.tenth_second_epoch > $newest
+      RETURN sc;""";
 
   @Inject
-  public TimestampLoader(final QuarkusCqlSession session) {
-    this.session = session;
+  Driver driver;
 
-    this.selectAllTimestampsForToken = session.prepare(
-        "SELECT * " + "FROM span_count_per_time_bucket_and_token "
-            + "WHERE landscape_token = ?");
-
-    this.selectNewerTimestampsForToken = session.prepare(
-        "SELECT * " + "FROM span_count_per_time_bucket_and_token "
-            + "WHERE landscape_token = ? AND tenth_second_epoch > ?");
-
-    this.selectAllTimestampsForTokenAndCommit = session.prepare(
-        "SELECT * " + "FROM span_count_for_token_and_commit_and_time_bucket "
-            + "WHERE landscape_token = ? AND git_commit_checksum = ?");
-
-    this.selectNewerTimestampsForTokenAndCommit = session.prepare(
-        "SELECT * " + "FROM span_count_for_token_and_commit_and_time_bucket "
-            + "WHERE landscape_token = ? AND git_commit_checksum = ? AND "
-            + "tenth_second_epoch > ?");
+  static Uni<Void> sessionFinalizer(ReactiveSession session) { 
+    return Uni.createFrom().publisher(session.close());
   }
 
   public Multi<Timestamp> loadAllTimestampsForToken(final UUID landscapeToken,
@@ -49,14 +58,18 @@ public class TimestampLoader {
     LOGGER.atTrace().addArgument(landscapeToken).addArgument(commit.orElse("all-commits"))
         .log("Loading all timestamps for token {} and commit {}");
 
-    if (commit.isPresent()) {
-      return session.executeReactive(
-              this.selectAllTimestampsForTokenAndCommit.bind(landscapeToken, commit.get()))
-          .map(Timestamp::fromRow);
-    } else {
-      return session.executeReactive(this.selectAllTimestampsForToken.bind(landscapeToken))
-          .map(Timestamp::fromRow);
-    }
+    String query = commit.isPresent() ? selectAllTimestampsForTokenAndCommit : selectAllTimestampsForToken;
+    Map<String, Object> params = Map.of(
+      "landscape_token", landscapeToken.toString(),
+      "git_commit_checksum", commit.orElse(""));
+
+    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class), 
+        session -> session.executeRead(tx -> {
+            var result = tx.run(query, params);
+            return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+        }))
+        .withFinalizer(TimestampLoader::sessionFinalizer) 
+        .map(Timestamp::fromRecord);
   }
 
   public Multi<Timestamp> loadNewerTimestampsForToken(UUID landscapeToken, long newest,
@@ -65,17 +78,18 @@ public class TimestampLoader {
         .addArgument(commit.orElse("all-commits"))
         .log("Loading newer timestamps for token {} and newest timestamp {} and commit {}.");
 
-    if (commit.isPresent()) {
-      return session.executeReactive(
-              this.selectNewerTimestampsForTokenAndCommit.bind(landscapeToken, commit.get(),
-                  newest))
-          .map(Timestamp::fromRow);
-    } else {
-      return session.executeReactive(
-              this.selectNewerTimestampsForToken.bind(landscapeToken, newest))
-          .map(Timestamp::fromRow);
-    }
+    String query = commit.isPresent() ? selectNewerTimestampsForTokenAndCommit : selectNewerTimestampsForToken;
+    Map<String, Object> params = Map.of(
+      "landscape_token", landscapeToken.toString(),
+      "git_commit_checksum", commit.orElse(null),
+      "newest", newest);
 
-
+    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class), 
+        session -> session.executeRead(tx -> {
+            var result = tx.run(query, params);
+            return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+        }))
+        .withFinalizer(TimestampLoader::sessionFinalizer) 
+        .map(Timestamp::fromRecord);
   }
 }

@@ -1,12 +1,17 @@
 package net.explorviz.span.trace;
 
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.quarkus.runtime.api.session.QuarkusCqlSession;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import net.explorviz.span.timestamp.TimestampLoader;
+
+import java.util.Map;
 import java.util.UUID;
+
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.reactive.ReactiveResult;
+import org.neo4j.driver.reactive.ReactiveSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,26 +20,28 @@ public class TraceLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TraceLoader.class);
 
-  private final QuarkusCqlSession session;
+  private static final String selectTraceByTime = """
+      MATCH (t:TraceByTime)
+      WHERE t.landscape_token = $landscape_token
+      RETURN t;""";
 
-  private final PreparedStatement selectTraceByTime;
-  private final PreparedStatement selectSpanByTraceid;
-  private final PreparedStatement selectAllTraces;
+  private static final String selectAllTraces = """
+      MATCH (t:TraceByTime)
+      WHERE t.landscape_token = $landscape_token
+      AND t.tenth_second_epoch = $tenth_second_epoch
+      RETURN t;""";
+
+  private static final String selectSpanByTraceId = """
+      MATCH (s:SpanByTraceId)
+      WHERE t.landscape_token = $landscape_token
+        AND t.trace_id = $trace_id
+      RETURN s;""";
 
   @Inject
-  public TraceLoader(final QuarkusCqlSession session) {
-    this.session = session;
+  Driver driver;
 
-    // only for debug, must not be used in production due to ALLOW FILTERING
-    this.selectAllTraces =
-        session.prepare("SELECT * " + "FROM trace_by_time " + "WHERE landscape_token = ? "
-            + "ALLOW FILTERING");
-
-    this.selectTraceByTime = session.prepare(
-        "SELECT * " + "FROM trace_by_time " + "WHERE landscape_token = ? "
-            + "AND tenth_second_epoch = ?");
-    this.selectSpanByTraceid = session.prepare(
-        "SELECT * " + "FROM span_by_traceid " + "WHERE landscape_token = ? " + "AND trace_id = ?");
+  static Uni<Void> sessionFinalizer(ReactiveSession session) { 
+    return Uni.createFrom().publisher(session.close());
   }
 
   public Multi<Trace> loadAllTraces(final UUID landscapeToken) {
@@ -42,11 +49,24 @@ public class TraceLoader {
 
     // TODO: Trace should not contain itself? i.e. filter out parent_span_id = 0
     // TODO: Is from/to inclusive/exclusive?
-    return session.executeReactive(selectAllTraces.bind(landscapeToken)).map(Trace::fromRow)
+
+    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class), 
+        session -> session.executeRead(tx -> {
+            var result = tx.run(selectAllTraces, Map.of("landscape_token", landscapeToken.toString()));
+            return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+        }))
+        .withFinalizer(TraceLoader::sessionFinalizer) 
+        .map(Trace::fromRecord)
         .flatMap(trace -> {
           LOGGER.atTrace().addArgument(() -> trace.traceId()).log("Found trace {}");
-          return session.executeReactive(selectSpanByTraceid.bind(landscapeToken, trace.traceId()))
-              .map(Span::fromRow).collect().asList().map(spanList -> {
+          return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class), 
+              session -> session.executeRead(tx -> {
+                  var result = tx.run(selectSpanByTraceId, Map.of("landscape_token", landscapeToken.toString(), "trace_id", trace.traceId()));
+                  return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+              }))
+              .withFinalizer(TraceLoader::sessionFinalizer) 
+              .map(Span::fromRecord)
+              .collect().asList().map(spanList -> {
                 trace.spanList().addAll(spanList);
                 return trace;
               }).toMulti();
@@ -60,14 +80,28 @@ public class TraceLoader {
 
     // TODO: Trace should not contain itself? i.e. filter out parent_span_id = 0
     // TODO: Is from/to inclusive/exclusive?
-    return session.executeReactive(selectTraceByTime.bind(landscapeToken, tenthSecondEpoch))
-        .map(Trace::fromRow).flatMap(trace -> {
-          LOGGER.atTrace().addArgument(() -> trace.traceId()).log("Found trace {}");
-          return session.executeReactive(selectSpanByTraceid.bind(landscapeToken, trace.traceId()))
-              .map(Span::fromRow).collect().asList().map(spanList -> {
-                trace.spanList().addAll(spanList);
-                return trace;
-              }).toMulti();
+    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class), 
+        session -> session.executeRead(tx -> {
+            var result = tx.run(selectTraceByTime, Map.of("landscape_token", landscapeToken.toString(), "tenth_second_epoch", tenthSecondEpoch));
+            return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+        }))
+        .withFinalizer(TraceLoader::sessionFinalizer)
+        .map(Trace::fromRecord)
+        .flatMap(trace -> {
+              LOGGER.atTrace().addArgument(() -> trace.traceId()).log("Found trace {}");
+
+              return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class),
+                      session -> session.executeRead(tx -> {
+                        var result = tx.run(selectSpanByTraceId,
+                            Map.of("landscape_token", landscapeToken.toString(), "trace_id", trace.traceId()));
+                        return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+                      }))
+                  .withFinalizer(TraceLoader::sessionFinalizer)
+                  .map(Span::fromRecord)
+                  .collect().asList().map(spanList -> {
+                    trace.spanList().addAll(spanList);
+                    return trace;
+                  }).toMulti();
         });
   }
 
