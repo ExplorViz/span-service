@@ -4,13 +4,9 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import net.explorviz.span.landscape.loader.LandscapeLoader;
-import net.explorviz.span.landscape.loader.LandscapeRecord;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.reactive.ReactiveResult;
 import org.neo4j.driver.reactive.ReactiveSession;
@@ -49,7 +45,7 @@ public class TimestampLoader {
   @Inject
   Driver driver;
 
-  static Uni<Void> sessionFinalizer(ReactiveSession session) { 
+  static Uni<Void> sessionFinalizer(ReactiveSession session) {
     return Uni.createFrom().publisher(session.close());
   }
 
@@ -58,17 +54,18 @@ public class TimestampLoader {
     LOGGER.atTrace().addArgument(landscapeToken).addArgument(commit.orElse("all-commits"))
         .log("Loading all timestamps for token {} and commit {}");
 
-    String query = commit.isPresent() ? selectAllTimestampsForTokenAndCommit : selectAllTimestampsForToken;
+    String query =
+        commit.isPresent() ? selectAllTimestampsForTokenAndCommit : selectAllTimestampsForToken;
     Map<String, Object> params = Map.of(
-      "landscape_token", landscapeToken.toString(),
-      "git_commit_checksum", commit.orElse(""));
+        "landscape_token", landscapeToken.toString(),
+        "git_commit_checksum", commit.orElse(""));
 
-    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class), 
-        session -> session.executeRead(tx -> {
-            var result = tx.run(query, params);
-            return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
-        }))
-        .withFinalizer(TimestampLoader::sessionFinalizer) 
+    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class),
+            session -> session.executeRead(tx -> {
+              var result = tx.run(query, params);
+              return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+            }))
+        .withFinalizer(TimestampLoader::sessionFinalizer)
         .map(Timestamp::fromRecord);
   }
 
@@ -78,18 +75,19 @@ public class TimestampLoader {
         .addArgument(commit.orElse("all-commits"))
         .log("Loading newer timestamps for token {} and newest timestamp {} and commit {}.");
 
-    String query = commit.isPresent() ? selectNewerTimestampsForTokenAndCommit : selectNewerTimestampsForToken;
+    String query =
+        commit.isPresent() ? selectNewerTimestampsForTokenAndCommit : selectNewerTimestampsForToken;
     Map<String, Object> params = Map.of(
-      "landscape_token", landscapeToken.toString(),
-      "git_commit_checksum", commit.orElse(null),
-      "newest", newest);
+        "landscape_token", landscapeToken.toString(),
+        "git_commit_checksum", commit.orElse(null),
+        "newest", newest);
 
-    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class), 
-        session -> session.executeRead(tx -> {
-            var result = tx.run(query, params);
-            return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
-        }))
-        .withFinalizer(TimestampLoader::sessionFinalizer) 
+    return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class),
+            session -> session.executeRead(tx -> {
+              var result = tx.run(query, params);
+              return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
+            }))
+        .withFinalizer(TimestampLoader::sessionFinalizer)
         .map(Timestamp::fromRecord);
   }
 }
