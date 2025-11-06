@@ -66,7 +66,7 @@ public class TimestampLoader {
               return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
             }))
         .withFinalizer(TimestampLoader::sessionFinalizer)
-        .map(Timestamp::fromRecord);
+        .map(record -> Timestamp.fromNode(record.get("sc").asNode()));
   }
 
   public Multi<Timestamp> loadNewerTimestampsForToken(UUID landscapeToken, long newest,
@@ -88,6 +88,6 @@ public class TimestampLoader {
               return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
             }))
         .withFinalizer(TimestampLoader::sessionFinalizer)
-        .map(Timestamp::fromRecord);
+        .map(record -> Timestamp.fromNode(record.get("sc").asNode()));
   }
 }

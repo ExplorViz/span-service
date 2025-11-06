@@ -3,7 +3,7 @@ package net.explorviz.span.trace;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.neo4j.driver.Record;
+import org.neo4j.driver.types.Node;
 
 public record Trace(
     UUID landscapeToken,
@@ -17,13 +17,13 @@ public record Trace(
     List<Span> spanList
 ) {
 
-  public static Trace fromRecord(final Record record) {
-    final UUID landscapeToken = UUID.fromString(record.get("landscape_token").asString());
-    final String traceId = record.get("trace_id").asString();
-    final String gitCommitChecksum = record.get("git_commit_checksum").asString();
+  public static Trace fromNode(final Node node) {
+    final UUID landscapeToken = UUID.fromString(node.get("landscape_token").asString());
+    final String traceId = node.get("trace_id").asString();
+    final String gitCommitChecksum = node.get("git_commit_checksum").asString();
     // TODO: Remove millisecond/nanosecond mismatch hotfix
-    final long startTime = record.get("start_time").asLong();
-    final long endTime = record.get("end_time").asLong();
+    final long startTime = node.get("start_time").asLong();
+    final long endTime = node.get("end_time").asLong();
     final long duration = endTime - startTime;
     final int overallRequestCount = 1;
     final int traceCount = 1;

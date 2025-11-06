@@ -54,7 +54,7 @@ public class TraceLoader {
               return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
             }))
         .withFinalizer(TraceLoader::sessionFinalizer)
-        .map(Trace::fromRecord)
+        .map(record -> Trace.fromNode(record.get("t").asNode()))
         .flatMap(trace -> {
           LOGGER.atTrace().addArgument(() -> trace.traceId()).log("Found trace {}");
           return Multi.createFrom().resource(() -> driver.session(ReactiveSession.class),
@@ -65,7 +65,7 @@ public class TraceLoader {
                     return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
                   }))
               .withFinalizer(TraceLoader::sessionFinalizer)
-              .map(Span::fromRecord)
+              .map(record -> Span.fromNode(record.get("s").asNode()))
               .collect().asList().map(spanList -> {
                 trace.spanList().addAll(spanList);
                 return trace;
@@ -88,7 +88,7 @@ public class TraceLoader {
               return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
             }))
         .withFinalizer(TraceLoader::sessionFinalizer)
-        .map(Trace::fromRecord)
+        .map(record -> Trace.fromNode(record.get("t").asNode()))
         .flatMap(trace -> {
           LOGGER.atTrace().addArgument(() -> trace.traceId()).log("Found trace {}");
 
@@ -100,7 +100,7 @@ public class TraceLoader {
                     return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
                   }))
               .withFinalizer(TraceLoader::sessionFinalizer)
-              .map(Span::fromRecord)
+              .map(record -> Span.fromNode(record.get("s").asNode()))
               .collect().asList().map(spanList -> {
                 trace.spanList().addAll(spanList);
                 return trace;

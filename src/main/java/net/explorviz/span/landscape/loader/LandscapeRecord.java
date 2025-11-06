@@ -2,7 +2,7 @@ package net.explorviz.span.landscape.loader;
 
 import java.util.Arrays;
 import java.util.UUID;
-import org.neo4j.driver.Record;
+import org.neo4j.driver.types.Node;
 
 // TODO: Unify PersistenceSpan and LandscapeRecord? (move FQN parsing into assembler?)
 public record LandscapeRecord(
@@ -22,20 +22,20 @@ public record LandscapeRecord(
     String k8sDeploymentName,
     long timeSeen) {
 
-  public static LandscapeRecord fromRecord(final Record record) {
-    final UUID landscapeToken = UUID.fromString(record.get("landscape_token").asString());
-    final String methodHash = record.get("method_hash").asString();
-    final String nodeIpAddress = record.get("node_ip_address").asString();
-    final String hostName = record.get("host_name").asString();
-    final String applicationName = record.get("application_name").asString();
-    final String applicationLanguage = record.get("application_language").asString();
-    final String applicationInstance = record.get("application_instance").asString();
-    final String methodFqn = record.get("method_fqn").asString();
-    final long timeSeen = record.get("time_seen").asLong();
-    final String k8sPodName = record.get("k8s_pod_name").asString();
-    final String k8sNodeName = record.get("k8s_node_name").asString();
-    final String k8sNamespace = record.get("k8s_namespace").asString();
-    final String k8sDeploymentName = record.get("k8s_deployment_name").asString();
+  public static LandscapeRecord fromNode(final Node node) {
+    final UUID landscapeToken = UUID.fromString(node.get("landscape_token").asString());
+    final String methodHash = node.get("method_hash").asString();
+    final String nodeIpAddress = node.get("node_ip_address").asString();
+    final String hostName = node.get("host_name").asString();
+    final String applicationName = node.get("application_name").asString();
+    final String applicationLanguage = node.get("application_language").asString();
+    final String applicationInstance = node.get("application_instance").asString();
+    final String methodFqn = node.get("method_fqn").asString();
+    final long timeSeen = node.get("time_seen").asLong();
+    final String k8sPodName = node.get("k8s_pod_name").asString();
+    final String k8sNodeName = node.get("k8s_node_name").asString();
+    final String k8sNamespace = node.get("k8s_namespace").asString();
+    final String k8sDeploymentName = node.get("k8s_deployment_name").asString();
 
     // TODO: Error handling
     /*

@@ -66,7 +66,7 @@ public class LandscapeLoader {
               return Multi.createFrom().publisher(result).flatMap(ReactiveResult::records);
             }))
         .withFinalizer(LandscapeLoader::sessionFinalizer)
-        .map(LandscapeRecord::fromRecord)
+        .map(record -> LandscapeRecord.fromNode(record.get("ss").asNode()))
         .onItem().invoke(lastLoadedStructures::incrementAndGet);
   }
 

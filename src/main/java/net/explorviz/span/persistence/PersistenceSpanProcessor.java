@@ -80,6 +80,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         landscape_token: $landscape_token,
         tenth_second_epoch: $tenth_second_epoch
       })
+      ON CREATE SET sc.span_count = 0
       SET sc.span_count = sc.span_count + 1;""";
 
   private static final String updateSpanBucketCounterForCommits = """
@@ -88,6 +89,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         git_commit_checksum: $git_commit_checksum,
         tenth_second_epoch: $tenth_second_epoch
       })
+      ON CREATE SET sc.span_count = 0
       SET sc.span_count = sc.span_count + 1;""";
 
   @Inject
