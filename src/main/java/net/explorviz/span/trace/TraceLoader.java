@@ -30,8 +30,8 @@ public class TraceLoader {
 
   private static final String selectSpanByTraceId = """
       MATCH (s:SpanByTraceId)
-      WHERE t.landscape_token = $landscape_token
-        AND t.trace_id = $trace_id
+      WHERE s.landscape_token = $landscape_token
+        AND s.trace_id = $trace_id
       RETURN s;""";
 
   @Inject
