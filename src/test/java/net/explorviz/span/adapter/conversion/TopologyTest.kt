@@ -190,7 +190,7 @@ class TopologyTest {
 //        val result = spanOutputTopic!!.readKeyValue().value
 //
 //        val expectedTimestamp = sampleSpan().startTimeUnixNano / 1_000_000L
-//        assertEquals(expectedTimestamp, result.startTimeEpochMilli)
+//        assertEquals(expectedTimestamp, result.startTimeEpochNano)
 //    }
 //
 //    @Test
@@ -212,8 +212,8 @@ class TopologyTest {
 //        assertEquals(expectedToken, result.landscapeToken, "Invalid token")
 //        assertEquals(expectedSpanId, result.spanId, "Invalid span ID")
 //        assertEquals(expectedParentSpanId, result.parentSpanId, "Invalid parent span ID")
-//        assertEquals(expectedStartTimeInMillisec, result.startTimeEpochMilli, "Invalid start time")
-//        assertEquals(expectedEndTimeInMillisec, result.endTimeEpochMilli, "Invalid end time")
+//        assertEquals(expectedStartTimeInMillisec, result.startTimeEpochNano, "Invalid start time")
+//        assertEquals(expectedEndTimeInMillisec, result.endTimeEpochNano, "Invalid end time")
 //    }
 //
 //    @Test

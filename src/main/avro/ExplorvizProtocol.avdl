@@ -28,8 +28,8 @@ protocol ExplorvizProtocol {
         string spanId;
         string parentSpanId;
         string traceId;
-        long startTimeEpochMilli;
-        long endTimeEpochMilli;
+        long startTimeEpochNano;
+        long endTimeEpochNano;
         string fullyQualifiedOperationName;
         string hostname;
         string hostIpAddress;
