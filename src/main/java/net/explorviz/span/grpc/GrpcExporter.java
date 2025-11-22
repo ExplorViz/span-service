@@ -20,7 +20,11 @@ public class GrpcExporter {
         .setEndTime(span.endTime())
         .build();
 
-    spanDataGrpcClient.persistSpan(spanData);
+    spanDataGrpcClient.persistSpan(spanData)
+        .subscribe().with(
+            reply -> System.out.println("Server replied: " + reply),
+            Throwable::printStackTrace
+        );
   }
 
 }
