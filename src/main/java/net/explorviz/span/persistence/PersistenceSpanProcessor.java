@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import net.explorviz.span.grpc.GrpcExporter;
 import org.eclipse.microprofile.context.ThreadContext;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.SessionConfig;
@@ -98,6 +99,9 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   @Inject
   private ThreadContext threadContext;
 
+  @Inject
+  private GrpcExporter exporter;
+
   @Override
   public void accept(final PersistenceSpan span) {
     final Set<String> knownHashes = knownHashesByLandscape.computeIfAbsent(span.landscapeToken(),
@@ -121,123 +125,128 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   }
 
   private void updateSpanBucketCounter(final PersistenceSpan span) {
-    final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
-
-    Map<String, Object> params1 = Map.of(
-        "landscape_token", span.landscapeToken().toString(), "tenth_second_epoch", tenSecondBucket);
-
-    Map<String, Object> params2 = Map.of(
-        "landscape_token", span.landscapeToken().toString(),
-        "git_commit_checksum", span.gitCommitChecksum(),
-        "tenth_second_epoch", tenSecondBucket);
-
-    AsyncSession session = driver.session(AsyncSession.class);
-
-    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
-        .runAsync(updateSpanBucketCounter, params1)
-        .thenCompose(ResultCursor::consumeAsync)
-        .thenCompose(rs -> tx.runAsync(updateSpanBucketCounterForCommits, params2))
-        .thenCompose(ResultCursor::consumeAsync));
-
-    threadContext.withContextCapture(cs)
-        .thenCompose(summary -> session.closeAsync());
+    //    final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
+    //
+    //    Map<String, Object> params1 = Map.of(
+    //        "landscape_token",
+    //        span.landscapeToken().toString(), "tenth_second_epoch", tenSecondBucket);
+    //
+    //    Map<String, Object> params2 = Map.of(
+    //        "landscape_token", span.landscapeToken().toString(),
+    //        "git_commit_checksum", span.gitCommitChecksum(),
+    //        "tenth_second_epoch", tenSecondBucket);
+    //
+    //    AsyncSession session = driver.session(AsyncSession.class);
+    //
+    //    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
+    //        .runAsync(updateSpanBucketCounter, params1)
+    //        .thenCompose(ResultCursor::consumeAsync)
+    //        .thenCompose(rs -> tx.runAsync(updateSpanBucketCounterForCommits, params2))
+    //        .thenCompose(ResultCursor::consumeAsync));
+    //
+    //    threadContext.withContextCapture(cs)
+    //        .thenCompose(summary -> session.closeAsync());
   }
 
   private void insertSpanStructure(final PersistenceSpan span) {
-    Map<String, Object> params = Map.ofEntries(
-        Map.entry("landscape_token", span.landscapeToken().toString()),
-        Map.entry("method_hash", span.methodHash()),
-        Map.entry("node_ip_address", span.nodeIpAddress()),
-        Map.entry("host_name", span.hostName()),
-        Map.entry("application_name", span.applicationName()),
-        Map.entry("application_language", span.applicationLanguage()),
-        Map.entry("application_instance", span.applicationInstance()),
-        Map.entry("method_fqn", span.methodFqn()),
-        Map.entry("time_seen", span.startTime()),
-        Map.entry("k8s_pod_name", span.k8sPodName()),
-        Map.entry("k8s_node_name", span.k8sNodeName()),
-        Map.entry("k8s_namespace", span.k8sNamespace()),
-        Map.entry("k8s_deployment_name", span.k8sDeploymentName()),
-        Map.entry("timestamp", Instant.now().toEpochMilli()));
+    //    Map<String, Object> params = Map.ofEntries(
+    //        Map.entry("landscape_token", span.landscapeToken().toString()),
+    //        Map.entry("method_hash", span.methodHash()),
+    //        Map.entry("node_ip_address", span.nodeIpAddress()),
+    //        Map.entry("host_name", span.hostName()),
+    //        Map.entry("application_name", span.applicationName()),
+    //        Map.entry("application_language", span.applicationLanguage()),
+    //        Map.entry("application_instance", span.applicationInstance()),
+    //        Map.entry("method_fqn", span.methodFqn()),
+    //        Map.entry("time_seen", span.startTime()),
+    //        Map.entry("k8s_pod_name", span.k8sPodName()),
+    //        Map.entry("k8s_node_name", span.k8sNodeName()),
+    //        Map.entry("k8s_namespace", span.k8sNamespace()),
+    //        Map.entry("k8s_deployment_name", span.k8sDeploymentName()),
+    //        Map.entry("timestamp", Instant.now().toEpochMilli()));
+    //
+    //    AsyncSession session = driver.session(AsyncSession.class);
+    //    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
+    //        .runAsync(insertSpanStructureStatement, params)
+    //        .thenCompose(ResultCursor::consumeAsync)
+    //        .whenComplete((result, failure) -> {
+    //          if (failure == null) {
+    //            LOGGER.atTrace().addArgument(span::methodHash).addArgument(span::methodFqn)
+    //                .log("Saved new structure span with method_hash={}, method_fqn={}");
+    //            lastSavesSpanStructures.incrementAndGet();
+    //          } else {
+    //            lastFailures.incrementAndGet();
+    //            LOGGER.atError().addArgument(span::methodHash)
+    //                .log("Could not persist structure span with hash {}, removing from cache");
+    //            knownHashesByLandscape.get(span.landscapeToken()).remove(span.methodHash());
+    //          }
+    //        }));
+    //
+    //    threadContext.withContextCapture(cs)
+    //        .thenCompose(summary -> session.closeAsync());
 
-    AsyncSession session = driver.session(AsyncSession.class);
-    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
-        .runAsync(insertSpanStructureStatement, params)
-        .thenCompose(ResultCursor::consumeAsync)
-        .whenComplete((result, failure) -> {
-          if (failure == null) {
-            LOGGER.atTrace().addArgument(span::methodHash).addArgument(span::methodFqn)
-                .log("Saved new structure span with method_hash={}, method_fqn={}");
-            lastSavesSpanStructures.incrementAndGet();
-          } else {
-            lastFailures.incrementAndGet();
-            LOGGER.atError().addArgument(span::methodHash)
-                .log("Could not persist structure span with hash {}, removing from cache");
-            knownHashesByLandscape.get(span.landscapeToken()).remove(span.methodHash());
-          }
-        }));
-
-    threadContext.withContextCapture(cs)
-        .thenCompose(summary -> session.closeAsync());
+    exporter.persistSpan(span);
   }
 
   private void insertSpanDynamic(final PersistenceSpan span) {
-    Map<String, Object> params = Map.ofEntries(
-        Map.entry("landscape_token", span.landscapeToken().toString()),
-        Map.entry("trace_id", span.traceId()),
-        Map.entry("span_id", span.spanId()),
-        Map.entry("parent_span_id", span.parentSpanId()),
-        Map.entry("start_time", span.startTime()),
-        Map.entry("end_time", span.endTime()),
-        Map.entry("method_hash", span.methodHash()));
-
-    AsyncSession session = driver.session(AsyncSession.class);
-    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
-        .runAsync(insertSpanByTraceIdStatement, params)
-        .thenCompose(ResultCursor::consumeAsync)
-        .whenComplete((result, failure) -> {
-          if (failure == null) {
-            LOGGER.atTrace().addArgument(span::methodHash).addArgument(span::methodFqn)
-                .addArgument(span::traceId)
-                .log("Saved new dynamic span with method_hash={}, method_fqn={}, trace_id={}");
-          } else {
-            lastFailures.incrementAndGet();
-            LOGGER.error("Could not persist trace by time", failure);
-          }
-        }));
-
-    threadContext.withContextCapture(cs)
-        .thenCompose(summary -> session.closeAsync());
+    //    Map<String, Object> params = Map.ofEntries(
+    //        Map.entry("landscape_token", span.landscapeToken().toString()),
+    //        Map.entry("trace_id", span.traceId()),
+    //        Map.entry("span_id", span.spanId()),
+    //        Map.entry("parent_span_id", span.parentSpanId()),
+    //        Map.entry("start_time", span.startTime()),
+    //        Map.entry("end_time", span.endTime()),
+    //        Map.entry("method_hash", span.methodHash()));
+    //
+    //    AsyncSession session = driver.session(AsyncSession.class);
+    //    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
+    //        .runAsync(insertSpanByTraceIdStatement, params)
+    //        .thenCompose(ResultCursor::consumeAsync)
+    //        .whenComplete((result, failure) -> {
+    //          if (failure == null) {
+    //            LOGGER.atTrace().addArgument(span::methodHash).addArgument(span::methodFqn)
+    //                .addArgument(span::traceId)
+    //                .log(
+    //                  "Saved new dynamic span with method_hash={}, method_fqn={}, trace_id={}");
+    //          } else {
+    //            lastFailures.incrementAndGet();
+    //            LOGGER.error("Could not persist trace by time", failure);
+    //          }
+    //        }));
+    //
+    //    threadContext.withContextCapture(cs)
+    //        .thenCompose(summary -> session.closeAsync());
   }
 
   private void insertTrace(final PersistenceSpan span) {
-    final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
-
-    Map<String, Object> params = Map.ofEntries(
-        Map.entry("landscape_token", span.landscapeToken().toString()),
-        Map.entry("git_commit_checksum", span.gitCommitChecksum()),
-        Map.entry("tenth_second_epoch", tenSecondBucket),
-        Map.entry("start_time", span.startTime()),
-        Map.entry("end_time", span.endTime()),
-        Map.entry("trace_id", span.traceId()));
-
-    AsyncSession session = driver.session(AsyncSession.class);
-    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
-        .runAsync(insertTraceByTimeStatement, params)
-        .thenCompose(ResultCursor::consumeAsync)
-        .whenComplete((result, failure) -> {
-          if (failure == null) {
-            lastSavedTraces.incrementAndGet();
-            LOGGER.atTrace().addArgument(span::landscapeToken).addArgument(span::traceId)
-                .addArgument(tenSecondBucket)
-                .log("Saved new trace with token={}, trace_id={}, and ten second epoch bucket={}");
-          } else {
-            lastFailures.incrementAndGet();
-            LOGGER.error("Could not persist trace by time", failure);
-          }
-        }));
-
-    threadContext.withContextCapture(cs).thenCompose(summary -> session.closeAsync());
+    // final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
+    //
+    // Map<String, Object> params = Map.ofEntries(
+    //     Map.entry("landscape_token", span.landscapeToken().toString()),
+    //     Map.entry("git_commit_checksum", span.gitCommitChecksum()),
+    //     Map.entry("tenth_second_epoch", tenSecondBucket),
+    //     Map.entry("start_time", span.startTime()),
+    //     Map.entry("end_time", span.endTime()),
+    //     Map.entry("trace_id", span.traceId()));
+    //
+    // AsyncSession session = driver.session(AsyncSession.class);
+    // CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
+    //     .runAsync(insertTraceByTimeStatement, params)
+    //     .thenCompose(ResultCursor::consumeAsync)
+    //     .whenComplete((result, failure) -> {
+    //       if (failure == null) {
+    //         lastSavedTraces.incrementAndGet();
+    //         LOGGER.atTrace().addArgument(span::landscapeToken).addArgument(span::traceId)
+    //             .addArgument(tenSecondBucket)
+    //             .log(
+    //              "Saved new trace with token={}, trace_id={}, and ten second epoch bucket={}");
+    //       } else {
+    //         lastFailures.incrementAndGet();
+    //         LOGGER.error("Could not persist trace by time", failure);
+    //       }
+    //     }));
+    //
+    // threadContext.withContextCapture(cs).thenCompose(summary -> session.closeAsync());
   }
 
   @Scheduled(every = "{explorviz.log.span.interval}")

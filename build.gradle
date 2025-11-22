@@ -97,6 +97,12 @@ java {
 // Tasks Setups //
 
 sourceSets {
+  main {
+    java {
+      srcDirs 'build/classes/java/quarkus-generated-sources/grpc'
+    }
+  }
+
   integrationTest {
     java.srcDir file('src/integrationTest/java')
     compileClasspath += sourceSets.main.output
