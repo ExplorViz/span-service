@@ -109,9 +109,9 @@ public class LandscapeResource {
       //final boolean isSavepoint = from != exact;
       // Transform Multi<Timestamp> to Multi<Trace> with filtered spans
       final Multi<Trace> tracesWithSpansUnfiltered = allTimestamps.select()
-          .where(timestamp -> timestamp.epochMilli() >= from && timestamp.epochMilli() < to) // all traces within the buckets that fulfill the time range
+          .where(timestamp -> timestamp.epochNano() >= from && timestamp.epochNano() < to) // all traces within the buckets that fulfill the time range
           .onItem().transformToMultiAndConcatenate(
-            timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochMilli()) // multiple traces may be in the same bucket
+            timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochNano()) // multiple traces may be in the same bucket
           ).select().where(trace -> trace.startTime() < to);
 
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
