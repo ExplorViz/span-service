@@ -29,8 +29,8 @@ public class SpanConverterTest {
         .setAppLanguage("java")
         .setFullyQualifiedOperationName("asd.bfd")
         .setHashCode("6062567511045490928")
-        .setStartTimeEpochMilli(1668069002431000000L)
-        .setEndTimeEpochMilli(1668072086000000000L)
+        .setStartTimeEpochNano(1668069002431000000L)
+        .setEndTimeEpochNano(1668072086000000000L)
         .build();
   }
 
@@ -39,7 +39,7 @@ public class SpanConverterTest {
         span.getGitCommitChecksum(),
         span.getSpanId(),
         span.getParentSpanId(),
-        span.getTraceId(), span.getStartTimeEpochMilli(), span.getEndTimeEpochMilli(),
+        span.getTraceId(), span.getStartTimeEpochNano(), span.getEndTimeEpochNano(),
         span.getHostIpAddress(), span.getHostname(), span.getAppName(), span.getAppLanguage(),
         span.getAppInstanceId(),
         span.getFullyQualifiedOperationName(),

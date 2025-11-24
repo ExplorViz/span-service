@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 @ApplicationScoped
 public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 
@@ -32,37 +31,41 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 
   private final QuarkusCqlSession session;
 
-  //private final PreparedStatement insertSpanByTimeStatement;
+  // private final PreparedStatement insertSpanByTimeStatement;
   private final PreparedStatement insertSpanByTraceidStatement;
-  //private final PreparedStatement insertTraceByHashStatement;
+  // private final PreparedStatement insertTraceByHashStatement;
   private final PreparedStatement insertTraceByTimeStatement;
   private final PreparedStatement insertSpanStructureStatement;
   private final PreparedStatement updateSpanBucketCounter;
   private final PreparedStatement updateSpanBucketCounterForCommits;
 
-
   @Inject
   public PersistenceSpanProcessor(final QuarkusCqlSession session) {
     this.session = session;
 
-    /*this.insertSpanByTimeStatement = session.prepare(
-              "INSERT INTO span_by_time "
-            + "(landscape_token, start_time_s, start_time_ns, method_hash, span_id, trace_id) "
-            + "VALUES (?, ?, ?, ?, ?, ?)");*/
+    /*
+     * this.insertSpanByTimeStatement = session.prepare(
+     * "INSERT INTO span_by_time "
+     * +
+     * "(landscape_token, start_time_s, start_time_ns, method_hash, span_id, trace_id) "
+     * + "VALUES (?, ?, ?, ?, ?, ?)");
+     */
     this.insertSpanByTraceidStatement = session.prepare("INSERT INTO span_by_traceid "
         + "(landscape_token, trace_id, span_id, parent_span_id, start_time, "
         + "end_time, method_hash) " + "VALUES (?, ?, ?, ?, ?, ?, ?)");
-    /*this.insertTraceByHashStatement = session.prepare(
-              "INSERT INTO trace_by_hash "
-            + "(landscape_token, method_hash, time_bucket, trace_id) "
-            + "VALUES (?, ?, ?, ?)");*/
+    /*
+     * this.insertTraceByHashStatement = session.prepare(
+     * "INSERT INTO trace_by_hash "
+     * + "(landscape_token, method_hash, time_bucket, trace_id) "
+     * + "VALUES (?, ?, ?, ?)");
+     */
     this.insertTraceByTimeStatement = session.prepare("INSERT INTO trace_by_time "
         + "(landscape_token, git_commit_checksum, tenth_second_epoch, "
         + "start_time, end_time, trace_id) "
         + "VALUES (?, ?, ?, ?, ?, ?)");
     this.insertSpanStructureStatement = session.prepare("INSERT INTO span_structure "
         + "(landscape_token, method_hash, node_ip_address, host_name, application_name, "
-        + "application_language, application_instance, method_fqn, time_seen, " 
+        + "application_language, application_instance, method_fqn, time_seen, "
         + "k8s_pod_name, k8s_node_name, k8s_namespace, k8s_deployment_name) "
         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         + "USING TIMESTAMP ?");
@@ -83,7 +86,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     }
 
     // TODO: We should probably only insert spans
-    //  after corresponding span_structure has been inserted?
+    // after corresponding span_structure has been inserted?
 
     if (span.parentSpanId().isEmpty()) {
       insertTrace(span);
@@ -97,7 +100,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   }
 
   private void updateSpanBucketCounter(final PersistenceSpan span) {
-    final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
+    final long tenSecondBucketNanos = 10_000_000_000L;
+    final long tenSecondBucket = span.startTime() - (span.startTime() % tenSecondBucketNanos);
 
     BoundStatement updateStmt =
         this.updateSpanBucketCounter.bind(span.landscapeToken(), tenSecondBucket);
@@ -106,12 +110,10 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 
     updateStmt =
         this.updateSpanBucketCounterForCommits.bind(span.landscapeToken(), span.gitCommitChecksum(),
-            tenSecondBucket
-        );
+            tenSecondBucket);
 
     this.session.executeAsync(updateStmt);
   }
-
 
   private void insertSpanStructure(final PersistenceSpan span) {
     final BoundStatement stmtStructure =
@@ -138,31 +140,10 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   }
 
   private void insertSpanDynamic(final PersistenceSpan span) {
-    /*final BoundStatement stmtByTime = insertSpanByTimeStatement.bind(
-        span.landscapeToken(),
-        span.getStartTimeSeconds(),
-        span.getStartTimeNanos(),
-        span.methodHash(),
-        span.spanId(),
-        span.traceId()
-    );*/
-    // "(landscape_token, trace_id, span_id, parent_span_id, start_time_s, start_time_ns, "
-    //            + "end_time_s, end_time_ns, method_hash) "
     final BoundStatement stmtByTraceid =
-        insertSpanByTraceidStatement.bind(span.landscapeToken(), span.traceId(), span.spanId(),
+        insertSpanByTraceidStatement.bind(span.landscapeToken(), span.traceId(),
+            span.spanId(),
             span.parentSpanId(), span.startTime(), span.endTime(), span.methodHash());
-    /*final BoundStatement stmtByHash = insertTraceByHashStatement.bind(
-        span.landscapeToken(),
-        span.methodHash(),
-        span.getStartTimeBucket(),
-        span.traceId()
-    );*/
-
-    /*session.executeAsync(stmtByTime).exceptionally(failure -> {
-      lastFailures.incrementAndGet();
-      //LOGGER.error("Could not persist span by time", failure);
-      return null;
-    });*/
     session.executeAsync(stmtByTraceid).whenComplete((result, failure) -> {
       if (failure == null) {
         LOGGER.atTrace().addArgument(span::methodHash).addArgument(span::methodFqn)
@@ -173,15 +154,11 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
         LOGGER.error("Could not persist trace by time", failure);
       }
     });
-    /*session.executeAsync(stmtByHash).exceptionally(failure -> {
-      lastFailures.incrementAndGet();
-      //LOGGER.error("Could not persist trace by hashcode", failure);
-      return null;
-    });*/
   }
 
   private void insertTrace(final PersistenceSpan span) {
-    final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
+    final long tenSecondBucketNanos = 10_000_000_000L;
+    final long tenSecondBucket = span.startTime() - (span.startTime() % tenSecondBucketNanos);
 
     final BoundStatement stmtByTime =
         insertTraceByTimeStatement.bind(span.landscapeToken(), span.gitCommitChecksum(),

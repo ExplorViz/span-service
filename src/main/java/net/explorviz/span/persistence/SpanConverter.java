@@ -27,8 +27,8 @@ public class SpanConverter implements ValueMapper<Span, PersistenceSpan> {
       }
     }
 
-    final long startTime = span.getStartTimeEpochMilli();
-    final long endTime = span.getEndTimeEpochMilli();
+    final long startTime = span.getStartTimeEpochNano();
+    final long endTime = span.getEndTimeEpochNano();
     final String nodeIpAddress = span.getHostIpAddress();
     final String nodeHostName = span.getHostname();
     final String applicationName = span.getAppName();
