@@ -15,9 +15,14 @@ public class GrpcExporter {
 
   public void persistSpan(PersistenceSpan span) {
     SpanData spanData = SpanData.newBuilder()
-        .setId(span.spanId())
+        .setSpanId(span.spanId())
+        .setParentId(span.parentSpanId())
+        .setTraceId(span.traceId())
+        .setLandscapeTokenId(span.landscapeToken().toString())
         .setStartTime(span.startTime())
         .setEndTime(span.endTime())
+        .setApplicationName(span.applicationName())
+        .setFunctionFqn(span.methodFqn())
         .build();
 
     spanDataGrpcClient.persistSpan(spanData)

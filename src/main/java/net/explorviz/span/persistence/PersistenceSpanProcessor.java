@@ -106,20 +106,22 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   public void accept(final PersistenceSpan span) {
     final Set<String> knownHashes = knownHashesByLandscape.computeIfAbsent(span.landscapeToken(),
         uuid -> ConcurrentHashMap.newKeySet());
-    if (knownHashes.add(span.methodHash())) {
-      insertSpanStructure(span);
-    }
+//    if (knownHashes.add(span.methodHash())) {
+//      insertSpanStructure(span);
+//    }
+//
+//    // TODO: We should probably only insert spans
+//    //  after corresponding span_structure has been inserted?
+//
+//    if (span.parentSpanId().isEmpty()) {
+//      insertTrace(span);
+//    }
+//
+//    insertSpanDynamic(span);
+//
+//    updateSpanBucketCounter(span);
 
-    // TODO: We should probably only insert spans
-    //  after corresponding span_structure has been inserted?
-
-    if (span.parentSpanId().isEmpty()) {
-      insertTrace(span);
-    }
-
-    insertSpanDynamic(span);
-
-    updateSpanBucketCounter(span);
+    exporter.persistSpan(span);
 
     lastProcessedSpans.incrementAndGet();
   }
@@ -184,8 +186,6 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     //
     //    threadContext.withContextCapture(cs)
     //        .thenCompose(summary -> session.closeAsync());
-
-    exporter.persistSpan(span);
   }
 
   private void insertSpanDynamic(final PersistenceSpan span) {
