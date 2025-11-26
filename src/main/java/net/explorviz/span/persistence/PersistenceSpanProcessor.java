@@ -116,13 +116,15 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   }
 
   private void insertSpanStructure(final PersistenceSpan span) {
+    // Cassandra timestamps are in microseconds, not milliseconds
+    final long timestampMicros = Instant.now().toEpochMilli() * 1000;
     final BoundStatement stmtStructure =
         insertSpanStructureStatement.bind(span.landscapeToken(), span.methodHash(),
             span.nodeIpAddress(), span.hostName(), span.applicationName(),
             span.applicationLanguage(),
             span.applicationInstance(), span.methodFqn(), span.startTime(),
             span.k8sPodName(), span.k8sNodeName(), span.k8sNamespace(), span.k8sDeploymentName(),
-            Instant.now().toEpochMilli());
+            timestampMicros);
 
     session.executeAsync(stmtStructure).whenComplete((result, failure) -> {
       if (failure == null) {
@@ -188,6 +190,23 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     final long failures = this.lastFailures.getAndSet(0);
     if (failures != 0) {
       LOGGER.atWarn().addArgument(failures).log("Data loss occured. {} inserts failed");
+    }
+  }
+
+  /**
+   * Clears the in-memory cache of known method hashes for the given landscape token.
+   * This should be called when trace data is deleted from the database to ensure
+   * new spans can be properly persisted.
+   *
+   * @param landscapeToken the landscape token to clear the cache for
+   */
+  public void clearCacheForLandscapeToken(final UUID landscapeToken) {
+    final Set<String> removed = knownHashesByLandscape.remove(landscapeToken);
+    if (removed != null) {
+      LOGGER.info("Cleared {} known hashes from cache for landscape token: {}",
+          removed.size(), landscapeToken);
+    } else {
+      LOGGER.debug("No cached hashes found for landscape token: {}", landscapeToken);
     }
   }
 }
