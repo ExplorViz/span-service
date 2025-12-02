@@ -151,45 +151,7 @@ public class LandscapeResource {
       //allTimestamps.collect().asList()
     }
 
-    if(from != null && to != null) {
-      final Multi<Timestamp> allTimestamps = this.timestampLoader.loadAllTimestampsForToken(parseUuid(token), commit);
-      //final boolean isSavepoint = from != exact;
-      // Transform Multi<Timestamp> to Multi<Trace> with filtered spans
-      final Multi<Trace> tracesWithSpansUnfiltered = allTimestamps.select()
-          .where(timestamp -> timestamp.epochNano() >= from && timestamp.epochNano() < to) // all traces within the buckets that fulfill the time range
-          .onItem().transformToMultiAndConcatenate(
-            timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token), timestamp.epochNano()) // multiple traces may be in the same bucket
-          ).select().where(trace -> trace.startTime() < to);
-
-      return tracesWithSpansUnfiltered.onItem().transform(trace -> {
-        final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() < to && span.startTime() >= exact)
-            .collect(Collectors.toList());
-        final List<String> filteredSpanIds = filteredSpans.stream()
-            .map(span -> span.spanId())
-            .collect(Collectors.toList());
-  
-        final List<Span> orphanSpans = filteredSpans.stream()
-             .filter(span -> !filteredSpanIds.contains(span.parentSpanId()))
-             .map(orphan -> new Span(orphan.spanId(), "", orphan.startTime(), orphan.endTime(), orphan.methodHash()))
-             .collect(Collectors.toList());
-        final List<Span> spansWithParents = filteredSpans.stream()
-              .filter(span -> filteredSpanIds.contains(span.parentSpanId()))
-              .collect(Collectors.toList());
-        List<Span> merged = Stream.concat(orphanSpans.stream(), spansWithParents.stream())
-              .collect(Collectors.toList());
-
-        Trace traceWithSpansFiltered = new Trace(
-          trace.landscapeToken(), trace.traceId(), trace.gitCommitChecksum(), trace.startTime(), 
-          trace.endTime(), trace.duration(), trace.overallRequestCount(), 
-          trace.traceCount(), merged);
-        return traceWithSpansFiltered; 
-      });
-      //allTimestamps.collect().asList()
-    }
-
-    // ATTENTION: For the moment (when only one timestamp has been selected), we only filter based on the starting point of
-    // traces
+    // ATTENTION: For the moment (with only one timestamp being selected), we only filter based on the starting point of traces
     return traceLoader.loadTracesStartingInRange(parseUuid(token), from);
   }
 
