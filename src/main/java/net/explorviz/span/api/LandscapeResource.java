@@ -128,8 +128,9 @@ public class LandscapeResource {
           ).select().where(trace -> trace.startTime() < to);
 
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
+        final Long lowerBound = exact != null ? exact : from;
         final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() < to && span.startTime() >= exact)
+            .filter(span -> span.startTime() < to && span.startTime() >= lowerBound)
             .collect(Collectors.toList());
         final List<String> filteredSpanIds = filteredSpans.stream()
             .map(span -> span.spanId())
