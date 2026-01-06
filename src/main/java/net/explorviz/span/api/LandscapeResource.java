@@ -16,6 +16,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +32,6 @@ import net.explorviz.span.landscape.loader.LandscapeLoader;
 import net.explorviz.span.landscape.loader.LandscapeRecord;
 import net.explorviz.span.persistence.PersistenceSpan;
 import net.explorviz.span.persistence.PersistenceSpanProcessor;
-import net.explorviz.span.timestamp.Timestamp;
 import net.explorviz.span.timestamp.TimestampLoader;
 import net.explorviz.span.trace.Span;
 import net.explorviz.span.trace.Trace;
@@ -115,36 +115,82 @@ public class LandscapeResource {
     }
 
     if (from != null && to != null) {
-      final Multi<Timestamp> allTimestamps =
-          this.timestampLoader.loadAllTimestampsForToken(parseUuid(token), commit);
-      //final boolean isSavepoint = from != exact;
-      // Transform Multi<Timestamp> to Multi<Trace> with filtered spans
-      final Multi<Trace> tracesWithSpansUnfiltered = allTimestamps.select()
-          .where(timestamp -> timestamp.epochNano() >= from && timestamp.epochNano()
-              < to) // all traces within the buckets that fulfill the time range
+      // final boolean isSavepoint = from != exact;
+
+      // Calculate the time bucket size (10 seconds in nanoseconds)
+      final long tenSecondBucketNanos = 10_000_000_000L;
+      // Calculate the bucket containing 'from' and 'to'
+      final long fromBucket = from - (from % tenSecondBucketNanos);
+      final long toBucket = to - (to % tenSecondBucketNanos);
+
+      // To capture all traces that overlap [from, to), we need to look back further
+      // than just one bucket, since traces can span multiple buckets.
+      // We'll look back enough buckets to cover reasonable trace durations.
+      // Assuming traces can span up to ~1 minutes (6 buckets), we look back that
+      // far.
+      // This ensures we capture traces that started before 'from' but overlap the
+      // range.
+      final int maxBucketsBack = 6; // 1 minute worth of buckets
+      final long earliestBucketToCheck = fromBucket - (maxBucketsBack * tenSecondBucketNanos);
+
+      // Generate all bucket values we need to query, not just buckets with timestamp
+      // entries.
+      // This ensures we capture all traces that might overlap [from, to), even if
+      // their starting bucket doesn't have spans in the current time range.
+      final List<Long> bucketsToQuery = new ArrayList<>();
+      for (long bucket = earliestBucketToCheck; bucket <= toBucket;
+          bucket += tenSecondBucketNanos) {
+        bucketsToQuery.add(bucket);
+      }
+
+      // Query traces from all relevant buckets
+      // Collect and deduplicate by traceId since the same trace might appear in
+      // multiple buckets with different startTime/endTime values
+      final Multi<Trace> tracesWithSpansUnfiltered = Multi.createFrom().iterable(bucketsToQuery)
           .onItem().transformToMultiAndConcatenate(
-              timestamp -> traceLoader.loadTracesStartingInRange(parseUuid(token),
-                  timestamp.epochNano()) // multiple traces may be in the same bucket
-          ).select().where(trace -> trace.startTime() < to);
+              bucket -> traceLoader.loadTracesStartingInRange(parseUuid(token), bucket))
+          // Filter traces to only include those that actually overlap [from, to)
+          // A trace overlaps if: trace.startTime() < to AND trace.endTime() >= from
+          .select().where(trace -> trace.startTime() < to && trace.endTime() >= from)
+          // Collect all traces and deduplicate by traceId, merging duplicates
+          // When merging, keep the trace with earliest startTime and latest endTime
+          .collect().asMap(trace -> trace.traceId(), trace -> trace,
+              (trace1, trace2) -> {
+                // Merge traces: use earliest startTime, latest endTime
+                // Spans should already be complete since we load all spans for each traceId
+                final long mergedStartTime = Math.min(trace1.startTime(), trace2.startTime());
+                final long mergedEndTime = Math.max(trace1.endTime(), trace2.endTime());
+                final long mergedDuration = mergedEndTime - mergedStartTime;
+                // Use the trace with more spans (should be the same, but just in case)
+                final List<Span> mergedSpans = trace1.spanList().size() >= trace2.spanList().size()
+                    ? trace1.spanList()
+                    : trace2.spanList();
+                return new Trace(trace1.landscapeToken(), trace1.traceId(),
+                    trace1.gitCommitChecksum(), mergedStartTime, mergedEndTime, mergedDuration,
+                    trace1.overallRequestCount(), trace1.traceCount(), mergedSpans);
+              })
+          .onItem().transformToMulti(map -> Multi.createFrom().iterable(map.values()));
 
       return tracesWithSpansUnfiltered.onItem().transform(trace -> {
-        final Long lowerBound = exact != null ? exact : from;
-        final List<Span> filteredSpans = trace.spanList().stream()
-            .filter(span -> span.startTime() < to && span.startTime() >= lowerBound)
-            .collect(Collectors.toList());
-        final List<String> filteredSpanIds = filteredSpans.stream()
+        // If a trace overlaps [from, to), include ALL spans from that trace
+        // This ensures the complete trace structure is returned, not just spans
+        // with startTime in the query range
+        final List<Span> allSpans = trace.spanList();
+        final List<String> allSpanIds = allSpans.stream()
             .map(span -> span.spanId())
             .collect(Collectors.toList());
 
-        final List<Span> orphanSpans = filteredSpans.stream()
-            .filter(span -> !filteredSpanIds.contains(span.parentSpanId()))
+        // Identify orphan spans (spans whose parent is not in the trace)
+        final List<Span> orphanSpans = allSpans.stream()
+            .filter(span -> !allSpanIds.contains(span.parentSpanId()))
             .map(orphan -> new Span(orphan.spanId(), "", orphan.startTime(), orphan.endTime(),
                 orphan.methodHash()))
             .collect(Collectors.toList());
-        final List<Span> spansWithParents = filteredSpans.stream()
-            .filter(span -> filteredSpanIds.contains(span.parentSpanId()))
+        // Spans with parents in the trace
+        final List<Span> spansWithParents = allSpans.stream()
+            .filter(span -> allSpanIds.contains(span.parentSpanId()))
             .collect(Collectors.toList());
-        List<Span> merged = Stream.concat(orphanSpans.stream(), spansWithParents.stream())
+        final List<Span> merged = Stream.concat(orphanSpans.stream(), spansWithParents.stream())
             .collect(Collectors.toList());
 
         Trace traceWithSpansFiltered = new Trace(
@@ -153,7 +199,7 @@ public class LandscapeResource {
             trace.traceCount(), merged);
         return traceWithSpansFiltered;
       });
-      //allTimestamps.collect().asList()
+      // allTimestamps.collect().asList()
     }
 
     // ATTENTION: For the moment (with only one timestamp being selected),
@@ -170,10 +216,9 @@ public class LandscapeResource {
 
   @DELETE
   @Path("/{token}/trace-data")
-  @Operation(summary = "Delete all trace data for a landscape token",
-      description =
-          "Removes all trace and span data from the database for the given landscape token. "
-              + "This includes data from all related tables. Use with caution.")
+  @Operation(summary = "Delete all trace data for a landscape token", description =
+      "Removes all trace and span data from the database for the given landscape token. "
+          + "This includes data from all related tables. Use with caution.")
   @APIResponses({
       @APIResponse(responseCode = "204", description = "Trace data successfully deleted"),
       @APIResponse(responseCode = "400", description = "Invalid token format"),
@@ -266,7 +311,8 @@ public class LandscapeResource {
               .replaceWithVoid();
         })
         .chain(() -> {
-          // Delete from span_count_for_token_and_commit_and_time_bucket for each commit checksum
+          // Delete from span_count_for_token_and_commit_and_time_bucket for each commit
+          // checksum
           return Multi.createFrom().iterable(commitChecksums)
               .onItem().transformToUniAndConcatenate(checksum -> {
                 final SimpleStatement deleteStmt = SimpleStatement.newInstance(
