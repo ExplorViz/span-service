@@ -88,9 +88,9 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     // TODO: We should probably only insert spans
     // after corresponding span_structure has been inserted?
 
-    if (span.parentSpanId().isEmpty()) {
-      insertTrace(span);
-    }
+    // Always ensure trace entry exists for every span, not just root spans
+    // This ensures that traces are queryable even if child spans arrive before root spans
+    insertTrace(span);
 
     insertSpanDynamic(span);
 
@@ -153,7 +153,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
             .log("Saved new dynamic span with method_hash={}, method_fqn={}, trace_id={}");
       } else {
         lastFailures.incrementAndGet();
-        LOGGER.error("Could not persist trace by time", failure);
+        LOGGER.error("Could not persist span by traceid", failure);
       }
     });
   }
