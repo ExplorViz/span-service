@@ -22,7 +22,6 @@ import org.neo4j.driver.summary.ResultSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 @ApplicationScoped
 public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 
@@ -121,13 +120,16 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 //
 //    updateSpanBucketCounter(span);
 
+
     exporter.persistSpan(span);
+    updateSpanBucketCounter(span);
 
     lastProcessedSpans.incrementAndGet();
   }
 
   private void updateSpanBucketCounter(final PersistenceSpan span) {
-    //    final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
+    //    final long tenSecondBucketNanos = 10_000_000_000L;
+    //    final long tenSecondBucket = span.startTime() - (span.startTime() % tenSecondBucketNanos);
     //
     //    Map<String, Object> params1 = Map.of(
     //        "landscape_token",
@@ -151,6 +153,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   }
 
   private void insertSpanStructure(final PersistenceSpan span) {
+    //    // Cassandra timestamps are in microseconds, not milliseconds
+    //    final long timestampMicros = Instant.now().toEpochMilli() * 1000;
     //    Map<String, Object> params = Map.ofEntries(
     //        Map.entry("landscape_token", span.landscapeToken().toString()),
     //        Map.entry("method_hash", span.methodHash()),
@@ -165,7 +169,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     //        Map.entry("k8s_node_name", span.k8sNodeName()),
     //        Map.entry("k8s_namespace", span.k8sNamespace()),
     //        Map.entry("k8s_deployment_name", span.k8sDeploymentName()),
-    //        Map.entry("timestamp", Instant.now().toEpochMilli()));
+    //        Map.entry("timestamp", timestampMicros));
     //
     //    AsyncSession session = driver.session(AsyncSession.class);
     //    CompletionStage<ResultSummary> cs = session.executeWriteAsync(tx -> tx
@@ -219,7 +223,8 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   }
 
   private void insertTrace(final PersistenceSpan span) {
-    // final long tenSecondBucket = span.startTime() - (span.startTime() % 10_000);
+    //    final long tenSecondBucketNanos = 10_000_000_000L;
+    //    final long tenSecondBucket = span.startTime() - (span.startTime() % tenSecondBucketNanos);
     //
     // Map<String, Object> params = Map.ofEntries(
     //     Map.entry("landscape_token", span.landscapeToken().toString()),
@@ -260,6 +265,23 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
     final long failures = this.lastFailures.getAndSet(0);
     if (failures != 0) {
       LOGGER.atWarn().addArgument(failures).log("Data loss occured. {} inserts failed");
+    }
+  }
+
+  /**
+   * Clears the in-memory cache of known method hashes for the given landscape token.
+   * This should be called when trace data is deleted from the database to ensure
+   * new spans can be properly persisted.
+   *
+   * @param landscapeToken the landscape token to clear the cache for
+   */
+  public void clearCacheForLandscapeToken(final UUID landscapeToken) {
+    final Set<String> removed = knownHashesByLandscape.remove(landscapeToken);
+    if (removed != null) {
+      LOGGER.info("Cleared {} known hashes from cache for landscape token: {}",
+          removed.size(), landscapeToken);
+    } else {
+      LOGGER.debug("No cached hashes found for landscape token: {}", landscapeToken);
     }
   }
 }

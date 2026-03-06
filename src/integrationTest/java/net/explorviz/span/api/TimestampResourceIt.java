@@ -91,7 +91,7 @@ public class TimestampResourceIt {
       long key = entry.getKey().longValue();
       int value = entry.getValue().intValue();
 
-      Optional<Timestamp> optionalTimestamp = resultList.stream().filter(timestamp -> timestamp.epochMilli() == key)
+      Optional<Timestamp> optionalTimestamp = resultList.stream().filter(timestamp -> timestamp.epochNano() == key)
           .findFirst();
 
       if (optionalTimestamp.isEmpty()) {
@@ -305,7 +305,7 @@ public class TimestampResourceIt {
       long key = entry.getKey();
       int value = entry.getValue();
 
-      Optional<Timestamp> optionalTimestamp = resultList.stream().filter(timestamp -> timestamp.epochMilli() == key)
+      Optional<Timestamp> optionalTimestamp = resultList.stream().filter(timestamp -> timestamp.epochNano() == key)
           .findFirst();
 
       if (optionalTimestamp.isEmpty()) {

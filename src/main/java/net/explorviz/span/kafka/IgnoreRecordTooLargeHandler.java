@@ -4,6 +4,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.RecordTooLargeException;
+import org.apache.kafka.streams.errors.ErrorHandlerContext;
 import org.apache.kafka.streams.errors.ProductionExceptionHandler;
 
 /**
@@ -21,8 +22,8 @@ public class IgnoreRecordTooLargeHandler implements ProductionExceptionHandler {
   }
 
   @Override
-  public ProductionExceptionHandlerResponse handle(final ProducerRecord<byte[], byte[]> record,
-      final Exception exception) {
+  public ProductionExceptionHandlerResponse handle(final ErrorHandlerContext context,
+      final ProducerRecord<byte[], byte[]> record, final Exception exception) {
     if (exception instanceof RecordTooLargeException) {
       return ProductionExceptionHandlerResponse.CONTINUE;
     } else {
