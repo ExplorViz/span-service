@@ -37,13 +37,6 @@ dependencies {
 
   implementation "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha"
 
-  // Quarkus Cassandra Platform + DataStax Cassandra Driver
-  implementation enforcedPlatform("${quarkusPlatformGroupId}:quarkus-cassandra-bom:${quarkusPlatformVersion}")
-  implementation 'com.datastax.oss.quarkus:cassandra-quarkus-client'
-
-  // Quarkus Neo4j driver
-  implementation 'io.quarkiverse.neo4j:quarkus-neo4j:6.0.1'
-
   // Kafka Streams + Confluent Schema Registry + Avro (de)serializer
   implementation 'io.quarkus:quarkus-kafka-streams'
   implementation 'io.quarkus:quarkus-confluent-registry-avro'
@@ -53,18 +46,10 @@ dependencies {
   //testImplementation("org.jboss.slf4j:slf4j-jboss-logmanager")
   //integrationTestImplementation("org.jboss.slf4j:slf4j-jboss-logmanager")
 
-  // REST implementation (Jackson serialization) + MicroProfile OpenAPI specification
-  implementation 'io.quarkus:quarkus-rest-jackson'
-  implementation 'io.quarkus:quarkus-smallrye-openapi'
-
   testImplementation 'io.quarkus:quarkus-junit5'
   testImplementation 'io.quarkus:quarkus-junit5-mockito'
 
   // Integration / Api Tests
-  testImplementation 'io.rest-assured:rest-assured'
-  integrationTestImplementation 'io.rest-assured:rest-assured'
-  testImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
-  integrationTestImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
   testImplementation "org.testcontainers:kafka:1.17.5"
   testImplementation group: "org.apache.kafka", name: "kafka-streams-test-utils", version: "3.3.1"
   integrationTestImplementation "org.testcontainers:kafka:1.17.5"
@@ -187,7 +172,6 @@ test {
 
 // Needed by Mockito since closed Kotlin classes cannot be mocked
 allOpen {
-  annotation("jakarta.ws.rs.Path")
   annotation("jakarta.enterprise.context.ApplicationScoped")
   annotation("jakarta.persistence.Entity")
   annotation("io.quarkus.test.junit.QuarkusTest")
