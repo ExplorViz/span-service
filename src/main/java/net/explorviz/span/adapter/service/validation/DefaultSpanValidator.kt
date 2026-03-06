@@ -13,29 +13,30 @@ import org.slf4j.LoggerFactory
 
 @ApplicationScoped
 class DefaultSpanValidator
-@Inject
-constructor(
+@Inject constructor(
     private val tokenService: TokenService,
     @ConfigProperty(name = "explorviz.validate.token-existence") var validateTokens: Boolean = false
 ) : SpanValidator {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DefaultSpanValidator::class.java)
-        private const val MIN_DEPTH_FQN_NAME = 3
     }
 
     override fun isValid(span: Span): Boolean {
         val attr = AttributesReader(span)
-
         return validateTimestamp(span.startTimeUnixNano) && validateTimestamp(span.endTimeUnixNano) && isValid(attr)
     }
 
     fun isValid(spanAttributes: AttributesReader): Boolean {
-        return validateToken(spanAttributes.landscapeToken, spanAttributes.secret) &&
-            validateHost(spanAttributes.hostName, spanAttributes.hostIpAddress) &&
-            validateApp(spanAttributes.applicationName, spanAttributes.applicationLanguage) &&
-            validateOperation(spanAttributes.methodFqn) &&
-            validateK8s(spanAttributes)
+        return validateToken(
+            spanAttributes.landscapeToken,
+            spanAttributes.secret,
+        ) && validateHost(
+            spanAttributes.hostName,
+            spanAttributes.hostIpAddress,
+        ) && validateApp(spanAttributes.applicationName, spanAttributes.applicationLanguage) && validateOperation(
+            spanAttributes.methodFqn,
+        ) && validateK8s(spanAttributes)
     }
 
     private fun validateToken(token: String?, givenSecret: String?): Boolean {
@@ -104,15 +105,11 @@ constructor(
     }
 
     private fun validateOperation(fqn: String): Boolean {
-        val operationFqnSplit = fqn.split(".")
-        if (operationFqnSplit.size < MIN_DEPTH_FQN_NAME) {
+        if (fqn.isBlank()) {
             LOGGER.trace("Invalid span: Invalid operation name: {}", fqn)
             return false
         }
-
-        return operationFqnSplit[0].isNotBlank() &&
-            operationFqnSplit[1].isNotBlank() &&
-            operationFqnSplit[2].isNotBlank()
+        return true
     }
 
     private fun validateK8s(spanAttributes: AttributesReader): Boolean {

@@ -27,8 +27,10 @@ open class AttributesReader(private val span: Span) {
         const val APPLICATION_NAME = "service.name"
         const val APPLICATION_INSTANCE_ID = "service.instance.id"
         const val APPLICATION_LANGUAGE = "telemetry.sdk.language"
-        const val CODE_FUNCTION = "code.function"
-        const val CODE_NAMESPACE = "code.namespace"
+        const val CODE_FILE_PATH = "code.file.path"
+        const val CODE_FUNCTION_NAME = "code.function.name"
+        const val CODE_FUNCTION = "code.function" // Deprecated semconv code attribute
+        const val CODE_NAMESPACE = "code.namespace" // Deprecated semconv code attribute
         const val METHOD_FQN = "java.fqn"
         const val K8S_POD_NAME = "k8s.pod.name"
         const val K8S_NAMESPACE_NAME = "k8s.namespace.name"
@@ -68,11 +70,13 @@ open class AttributesReader(private val span: Span) {
 
     val methodFqn: String
         get() {
+            val codeFunctionName = getAsString(CODE_FUNCTION_NAME)
             val codeNamespace = getAsString(CODE_NAMESPACE)
             val codeFunction = getAsString(CODE_FUNCTION)
             val methodFqn = getAsString(METHOD_FQN)
 
-            return codeNamespace?.let { namespace -> codeFunction?.let { function -> "$namespace.$function" } }
+            return codeFunctionName
+                ?: codeNamespace?.let { namespace -> codeFunction?.let { function -> "$namespace.$function" } }
                 ?: methodFqn
                 ?: generateMethodFqnFromSpanName()
         }
@@ -101,21 +105,4 @@ open class AttributesReader(private val span: Span) {
 
     val k8sDeploymentName: String
         get() = getAsString(K8S_DEPLOYMENT_NAME) ?: ""
-
-    fun appendToSpan(builder: net.explorviz.avro.Span.Builder) {
-        builder.apply {
-            landscapeToken = this@AttributesReader.landscapeToken
-            gitCommitChecksum = this@AttributesReader.gitCommitChecksum
-            hostname = this@AttributesReader.hostName
-            hostIpAddress = this@AttributesReader.hostIpAddress
-            appInstanceId = this@AttributesReader.applicationInstanceId
-            appName = this@AttributesReader.applicationName
-            appLanguage = this@AttributesReader.applicationLanguage
-            fullyQualifiedOperationName = this@AttributesReader.methodFqn
-            k8sPodName = this@AttributesReader.k8sPodName
-            k8sNamespace = this@AttributesReader.k8sNamespace
-            k8sNodeName = this@AttributesReader.k8sNodeName
-            k8sDeploymentName = this@AttributesReader.k8sDeploymentName
-        }
-    }
 }
