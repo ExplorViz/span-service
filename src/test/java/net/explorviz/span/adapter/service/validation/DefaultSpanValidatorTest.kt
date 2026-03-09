@@ -205,7 +205,6 @@ class DefaultSpanValidatorTest {
                 "\t",
                 " ",
                 "noMethod",
-                "classNoPackage.method",
                 "...",
                 "a..",
                 "a.b.",

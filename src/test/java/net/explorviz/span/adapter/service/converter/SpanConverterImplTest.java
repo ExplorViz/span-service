@@ -19,7 +19,8 @@ public class SpanConverterImplTest {
 
   private Span sampleSpan() {
     return Span.newBuilder()
-        .setTraceId(ByteString.copyFrom(HexFormat.of().parseHex("50c246ad9c9883d1558df9f19b9ae7a6")))
+        .setTraceId(
+            ByteString.copyFrom(HexFormat.of().parseHex("50c246ad9c9883d1558df9f19b9ae7a6")))
         .setSpanId(ByteString.copyFrom(HexFormat.of().parseHex("7ef83c66eabd5fbb")))
         .setParentSpanId(ByteString.copyFrom(HexFormat.of().parseHex("7ef83c66efe42aaa")))
         .addAttributes(stringAttr("explorviz.token.id", PersistenceSpan.DEFAULT_UUID.toString()))
@@ -51,11 +52,18 @@ public class SpanConverterImplTest {
         "gitchecksum",
         "7ef83c66eabd5fbb",
         "7ef83c66efe42aaa",
-        "50c246ad9c9883d1558df9f19b9ae7a6", 1668069002431000000L, 1668072086000000000L,
-        "1.2.3.4", "testhostname", "testappname", "java",
+        "50c246ad9c9883d1558df9f19b9ae7a6",
+        1668069002431000000L,
+        1668072086000000000L,
+        "1.2.3.4",
+        "testhostname",
+        "testappname",
+        "java",
         "42",
-        "net.explorviz.test.Class.doSomething",
+        "net/explorviz/test/Class.java",
+        "doSomething",
         "-26423980179251174",
+        "Class",
         "",
         "",
         "",

@@ -3,6 +3,7 @@ package net.explorviz.span.adapter.span.service.validation
 import io.opentelemetry.proto.trace.v1.Span
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import java.nio.file.Paths
 import java.time.DateTimeException
 import net.explorviz.span.adapter.service.converter.AttributesReader
 import net.explorviz.span.adapter.service.TokenService
@@ -20,6 +21,7 @@ class DefaultSpanValidator
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DefaultSpanValidator::class.java)
+        private const val MIN_DEPTH_FQN_NAME = 2 // Method FQN must at least include class / file if no file path is set
     }
 
     override fun isValid(span: Span): Boolean {
@@ -35,7 +37,7 @@ class DefaultSpanValidator
             spanAttributes.hostName,
             spanAttributes.hostIpAddress,
         ) && validateApp(spanAttributes.applicationName, spanAttributes.applicationLanguage) && validateOperation(
-            spanAttributes.methodFqn,
+            spanAttributes.methodFqn, spanAttributes.filePath,
         ) && validateK8s(spanAttributes)
     }
 
@@ -104,11 +106,38 @@ class DefaultSpanValidator
         return isValid
     }
 
-    private fun validateOperation(fqn: String): Boolean {
-        if (fqn.isBlank()) {
-            LOGGER.trace("Invalid span: Invalid operation name: {}", fqn)
-            return false
+    private fun validateOperation(fqn: String, filePath: String): Boolean {
+        // Despite OTel semconv, absolute file paths are not desirable as we don't know where the application begins
+        val filePathIsValid =
+            filePath.isNotBlank() && runCatching { Paths.get(filePath).isAbsolute }.getOrDefault(false)
+
+        val operationFqnSplit = fqn.split(".")
+
+        if (filePathIsValid) {
+            if (operationFqnSplit.last().isBlank()) {
+                LOGGER.trace("Invalid span: Invalid operation name {}", fqn)
+                return false
+            }
+            return true
+        } else {
+            if (operationFqnSplit.size < MIN_DEPTH_FQN_NAME) {
+                LOGGER.trace(
+                    "Invalid span: Operation name \"{}\" too short with invalid file path given: \"{}\"",
+                    fqn,
+                    filePath,
+                )
+                return false
+            }
+            if (operationFqnSplit.any { it.isBlank() }) {
+                LOGGER.trace(
+                    "Invalid span: Operation name \"{}\" contains empty segments with invalid file path given: \"{}\"",
+                    fqn,
+                    filePath,
+                )
+                return false
+            }
         }
+
         return true
     }
 

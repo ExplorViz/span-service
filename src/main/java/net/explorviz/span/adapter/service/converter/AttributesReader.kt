@@ -68,6 +68,9 @@ open class AttributesReader(private val span: Span) {
     val applicationLanguage: String
         get() = getAsString(APPLICATION_LANGUAGE) ?: DEFAULT_APP_LANG
 
+    val filePath: String
+        get() = getAsString(CODE_FILE_PATH) ?: ""
+
     val methodFqn: String
         get() {
             val codeFunctionName = getAsString(CODE_FUNCTION_NAME)
