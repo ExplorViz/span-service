@@ -62,7 +62,6 @@ public class SpanConverterImplTest {
         "42",
         "net/explorviz/test/Class.java",
         "doSomething",
-        "-26423980179251174",
         "Class",
         "",
         "",

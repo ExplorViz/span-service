@@ -22,7 +22,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private final AtomicLong lastExportedSpans = new AtomicLong(0L);
   private final AtomicLong lastFailures = new AtomicLong(0L);
 
-  private final ConcurrentMap<UUID, Set<String>> knownHashesByLandscape =
+  private final ConcurrentMap<UUID, Set<String>> knownSpanIdsByLandscape =
       new ConcurrentHashMap<>(1);
 
   @Inject
@@ -30,9 +30,9 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
 
   @Override
   public void accept(final PersistenceSpan span) {
-    final Set<String> knownHashes = knownHashesByLandscape.computeIfAbsent(span.landscapeToken(),
+    final Set<String> knownSpanIds = knownSpanIdsByLandscape.computeIfAbsent(span.landscapeToken(),
         uuid -> ConcurrentHashMap.newKeySet());
-    if (knownHashes.add(span.methodHash())) {
+    if (knownSpanIds.add(span.spanId())) {
       exporter.persistSpan(span).subscribe().with(item -> lastExportedSpans.incrementAndGet(),
           failure -> lastFailures.incrementAndGet());
     }

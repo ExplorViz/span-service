@@ -17,7 +17,6 @@ public record PersistenceSpan(
     String applicationInstance,
     String filePath,
     String functionName,
-    String methodHash,
     String className,
     String k8sPodName,
     String k8sNodeName,

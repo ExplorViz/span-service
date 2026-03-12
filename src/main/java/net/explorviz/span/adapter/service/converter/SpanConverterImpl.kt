@@ -5,7 +5,6 @@ import java.util.*
 import net.explorviz.span.adapter.service.converter.fqn.DefaultParser
 import net.explorviz.span.adapter.service.converter.fqn.FqnParser
 import net.explorviz.span.adapter.service.converter.fqn.JavaFqnParser
-import net.explorviz.span.hash.HashHelper.calculateSpanHash
 import net.explorviz.span.persistence.PersistenceSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -66,12 +65,6 @@ class SpanConverterImpl : SpanConverter<PersistenceSpan> {
             ""
         }
 
-        val methodHashCode = calculateSpanHash(
-            landscapeToken, nodeIpAddress,
-            applicationName, applicationInstance, methodFqn, k8sPodName, k8sNodeName, k8sNamespace,
-            k8sDeploymentName,
-        )
-
         val parsingResult: FqnParser.ParsingResult = getFqnParser(applicationLanguage).parseFunctionFqn(methodFqn)
 
         // Explicit file path attribute takes precedence. If unset, then parse from fqn
@@ -96,7 +89,6 @@ class SpanConverterImpl : SpanConverter<PersistenceSpan> {
             applicationInstance,
             filePath,
             functionName,
-            methodHashCode,
             className,
             k8sPodName,
             k8sNodeName,
