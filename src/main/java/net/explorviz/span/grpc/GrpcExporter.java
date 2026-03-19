@@ -8,14 +8,15 @@ import net.explorviz.span.adapter.service.converter.DefaultAttributeValues;
 import net.explorviz.span.persistence.PersistenceSpan;
 import net.explorviz.span.proto.SpanData;
 import net.explorviz.span.proto.SpanDataService;
+import net.explorviz.span.proto.SpanDataServiceGrpc;
 
 @ApplicationScoped
 public class GrpcExporter {
 
   @GrpcClient("spanDataGrpcClient")
-  private SpanDataService spanDataGrpcClient;
+  /* default */ SpanDataServiceGrpc.SpanDataServiceBlockingStub spanDataGrpcClient;
 
-  public Uni<Empty> persistSpan(PersistenceSpan span) {
+  public void persistSpan(PersistenceSpan span) {
     final SpanData.Builder spanDataBuilder =
         SpanData.newBuilder().setSpanId(span.spanId()).setParentId(span.parentSpanId())
             .setTraceId(span.traceId()).setLandscapeTokenId(span.landscapeToken().toString())
@@ -32,7 +33,7 @@ public class GrpcExporter {
       spanDataBuilder.setCommitHash(span.gitCommitChecksum());
     }
 
-    return spanDataGrpcClient.persistSpan(spanDataBuilder.build());
+    spanDataGrpcClient.persistSpan(spanDataBuilder.build());
   }
 
 }

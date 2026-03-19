@@ -26,15 +26,20 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
       new ConcurrentHashMap<>(1);
 
   @Inject
-  private GrpcExporter exporter;
+  /* default */ GrpcExporter exporter;
 
   @Override
   public void accept(final PersistenceSpan span) {
     final Set<String> knownSpanIds = knownSpanIdsByLandscape.computeIfAbsent(span.landscapeToken(),
         uuid -> ConcurrentHashMap.newKeySet());
     if (knownSpanIds.add(span.spanId())) {
-      exporter.persistSpan(span).subscribe().with(item -> lastExportedSpans.incrementAndGet(),
-          failure -> lastFailures.incrementAndGet());
+      try {
+        exporter.persistSpan(span);
+        lastExportedSpans.incrementAndGet();
+      } catch (Exception e) {
+        LOGGER.atError().addArgument(e.getMessage()).log("Failed to export span via gRPC: {}", e);
+        lastFailures.incrementAndGet();
+      }
     }
 
     lastProcessedSpans.incrementAndGet();
