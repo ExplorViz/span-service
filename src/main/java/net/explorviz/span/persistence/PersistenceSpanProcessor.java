@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import net.explorviz.span.grpc.GrpcExporter;
+import net.explorviz.span.messaging.KafkaSpanExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,20 +26,15 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
       new ConcurrentHashMap<>(1);
 
   @Inject
-  /* default */ GrpcExporter exporter;
+  /* default */ KafkaSpanExporter exporter;
 
   @Override
   public void accept(final PersistenceSpan span) {
     final Set<String> knownSpanIds = knownSpanIdsByLandscape.computeIfAbsent(span.landscapeToken(),
         uuid -> ConcurrentHashMap.newKeySet());
     if (knownSpanIds.add(span.spanId())) {
-      try {
-        exporter.persistSpan(span);
-        lastExportedSpans.incrementAndGet();
-      } catch (Exception e) {
-        LOGGER.atError().addArgument(e.getMessage()).log("Failed to export span via gRPC: {}", e);
-        lastFailures.incrementAndGet();
-      }
+      exporter.persistSpan(span);
+      lastExportedSpans.incrementAndGet();
     }
 
     lastProcessedSpans.incrementAndGet();

@@ -25,6 +25,8 @@ repositories {
 dependencies {
   implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
 
+  implementation("io.quarkus:quarkus-vertx-http")
+
   implementation 'io.quarkus:quarkus-container-image-jib'
 
   implementation "io.quarkus:quarkus-kotlin"
@@ -33,14 +35,13 @@ dependencies {
   // Needed for scheduled jobs
   implementation 'io.quarkus:quarkus-scheduler'
 
-  implementation "io.quarkus:quarkus-grpc"
-
   implementation "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha"
 
   // Kafka Streams + Confluent Schema Registry + Avro (de)serializer
   implementation 'io.quarkus:quarkus-kafka-streams'
   implementation 'io.quarkus:quarkus-confluent-registry-avro'
   implementation group: 'io.confluent', name: 'kafka-streams-avro-serde', version: "${confluentAvroSerdeVersion}"
+  implementation 'io.quarkus:quarkus-messaging-kafka'
 
   //implementation("org.jboss.slf4j:slf4j-jboss-logmanager")
   //testImplementation("org.jboss.slf4j:slf4j-jboss-logmanager")
