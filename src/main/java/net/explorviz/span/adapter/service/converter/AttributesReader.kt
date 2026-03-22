@@ -71,10 +71,6 @@ open class AttributesReader(private val span: Span) {
     val filePath: String
         get() = getAsString(CODE_FILE_PATH) ?: ""
 
-    /*
-     TODO: Switch back to old return-statement before merge.
-           Current Docker image uses the function.name attribute incorrectly
-     */
     val methodFqn: String
         get() {
             val codeFunctionName = getAsString(CODE_FUNCTION_NAME)
@@ -82,12 +78,10 @@ open class AttributesReader(private val span: Span) {
             val codeFunction = getAsString(CODE_FUNCTION)
             val methodFqn = getAsString(METHOD_FQN)
 
-            return "$codeNamespace.$codeFunctionName"
-
-        //            return codeFunctionName
-        //                ?: codeNamespace?.let { namespace -> codeFunction?.let { function -> "$namespace.$function" } }
-        //                ?: methodFqn
-        //                ?: generateMethodFqnFromSpanName()
+            return codeFunctionName
+                ?: codeNamespace?.let { namespace -> codeFunction?.let { function -> "$namespace.$function" } }
+                ?: methodFqn
+                ?: generateMethodFqnFromSpanName()
     }
 
     open fun generateMethodFqnFromSpanName(): String {
