@@ -15,12 +15,16 @@ import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAU
 import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_PACKAGE_NAME
 import org.apache.commons.lang3.StringUtils
 
-/** Reads the attributes of a [Span]. */
+/** Reads the attributes of a [Span]. If an attribute is not found under the standard name, fallback attribute names
+ * may be provided. The preferred attribute names should always conform to the [OpenTelemetry Semantic Conventions](
+ * https://opentelemetry.io/docs/specs/semconv/)
+ */
 open class AttributesReader(private val span: Span) {
 
     companion object {
         const val LANDSCAPE_TOKEN = "explorviz.token.id"
         const val TOKEN_SECRET = "explorviz.token.secret"
+        const val VCS_REF_HEAD_REVISION = "vcs.ref.head.revision"
         const val GIT_COMMIT_CHECKSUM = "git_commit_checksum"
         const val HOST_NAME = "host"
         const val HOST_IP = "host_address"
@@ -57,7 +61,7 @@ open class AttributesReader(private val span: Span) {
         get() = getAsString(HOST_IP) ?: DEFAULT_HOST_IP
 
     val gitCommitChecksum: String
-        get() = getAsString(GIT_COMMIT_CHECKSUM) ?: DEFAULT_GIT_COMMIT_CHECKSUM
+        get() = getAsString(VCS_REF_HEAD_REVISION) ?: getAsString(GIT_COMMIT_CHECKSUM) ?: DEFAULT_GIT_COMMIT_CHECKSUM
 
     val applicationName: String
         get() = getAsString(APPLICATION_NAME) ?: DEFAULT_APP_NAME
@@ -82,7 +86,7 @@ open class AttributesReader(private val span: Span) {
                 ?: codeNamespace?.let { namespace -> codeFunction?.let { function -> "$namespace.$function" } }
                 ?: methodFqn
                 ?: generateMethodFqnFromSpanName()
-    }
+        }
 
     open fun generateMethodFqnFromSpanName(): String {
         val spanName = span.name
