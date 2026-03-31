@@ -34,6 +34,7 @@ public class KafkaSpanExporter {
         .setStartTime(span.startTime())
         .setEndTime(span.endTime())
         .setApplicationName(span.applicationName())
+        .setLanguage(span.applicationLanguage())
         .setFunctionName(span.functionName())
         .setFilePath(span.filePath())
         .setClassName(
