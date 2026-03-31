@@ -85,7 +85,7 @@ class SpanConverterImpl : SpanConverter<PersistenceSpan> {
             nodeIpAddress,
             hostName,
             applicationName,
-            applicationLanguage,
+            applicationLanguage ?: PersistenceSpan.DEFAULT_LANGUAGE,
             applicationInstance,
             filePath,
             functionName,
