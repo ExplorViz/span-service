@@ -15,20 +15,26 @@ import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAU
 import net.explorviz.span.adapter.service.converter.DefaultAttributeValues.DEFAULT_PACKAGE_NAME
 import org.apache.commons.lang3.StringUtils
 
-/** Reads the attributes of a [Span]. */
+/** Reads the attributes of a [Span]. If an attribute is not found under the standard name, fallback attribute names
+ * may be provided. The preferred attribute names should always conform to the [OpenTelemetry Semantic Conventions](
+ * https://opentelemetry.io/docs/specs/semconv/)
+ */
 open class AttributesReader(private val span: Span) {
 
     companion object {
         const val LANDSCAPE_TOKEN = "explorviz.token.id"
         const val TOKEN_SECRET = "explorviz.token.secret"
+        const val VCS_REF_HEAD_REVISION = "vcs.ref.head.revision"
         const val GIT_COMMIT_CHECKSUM = "git_commit_checksum"
         const val HOST_NAME = "host"
         const val HOST_IP = "host_address"
         const val APPLICATION_NAME = "service.name"
         const val APPLICATION_INSTANCE_ID = "service.instance.id"
         const val APPLICATION_LANGUAGE = "telemetry.sdk.language"
-        const val CODE_FUNCTION = "code.function"
-        const val CODE_NAMESPACE = "code.namespace"
+        const val CODE_FILE_PATH = "code.file.path"
+        const val CODE_FUNCTION_NAME = "code.function.name"
+        const val CODE_FUNCTION = "code.function" // Deprecated semconv code attribute
+        const val CODE_NAMESPACE = "code.namespace" // Deprecated semconv code attribute
         const val METHOD_FQN = "java.fqn"
         const val K8S_POD_NAME = "k8s.pod.name"
         const val K8S_NAMESPACE_NAME = "k8s.namespace.name"
@@ -55,7 +61,7 @@ open class AttributesReader(private val span: Span) {
         get() = getAsString(HOST_IP) ?: DEFAULT_HOST_IP
 
     val gitCommitChecksum: String
-        get() = getAsString(GIT_COMMIT_CHECKSUM) ?: DEFAULT_GIT_COMMIT_CHECKSUM
+        get() = getAsString(VCS_REF_HEAD_REVISION) ?: getAsString(GIT_COMMIT_CHECKSUM) ?: DEFAULT_GIT_COMMIT_CHECKSUM
 
     val applicationName: String
         get() = getAsString(APPLICATION_NAME) ?: DEFAULT_APP_NAME
@@ -66,13 +72,18 @@ open class AttributesReader(private val span: Span) {
     val applicationLanguage: String
         get() = getAsString(APPLICATION_LANGUAGE) ?: DEFAULT_APP_LANG
 
+    val filePath: String
+        get() = getAsString(CODE_FILE_PATH) ?: ""
+
     val methodFqn: String
         get() {
+            val codeFunctionName = getAsString(CODE_FUNCTION_NAME)
             val codeNamespace = getAsString(CODE_NAMESPACE)
             val codeFunction = getAsString(CODE_FUNCTION)
             val methodFqn = getAsString(METHOD_FQN)
 
-            return codeNamespace?.let { namespace -> codeFunction?.let { function -> "$namespace.$function" } }
+            return codeFunctionName
+                ?: codeNamespace?.let { namespace -> codeFunction?.let { function -> "$namespace.$function" } }
                 ?: methodFqn
                 ?: generateMethodFqnFromSpanName()
         }
@@ -101,21 +112,4 @@ open class AttributesReader(private val span: Span) {
 
     val k8sDeploymentName: String
         get() = getAsString(K8S_DEPLOYMENT_NAME) ?: ""
-
-    fun appendToSpan(builder: net.explorviz.avro.Span.Builder) {
-        builder.apply {
-            landscapeToken = this@AttributesReader.landscapeToken
-            gitCommitChecksum = this@AttributesReader.gitCommitChecksum
-            hostname = this@AttributesReader.hostName
-            hostIpAddress = this@AttributesReader.hostIpAddress
-            appInstanceId = this@AttributesReader.applicationInstanceId
-            appName = this@AttributesReader.applicationName
-            appLanguage = this@AttributesReader.applicationLanguage
-            fullyQualifiedOperationName = this@AttributesReader.methodFqn
-            k8sPodName = this@AttributesReader.k8sPodName
-            k8sNamespace = this@AttributesReader.k8sNamespace
-            k8sNodeName = this@AttributesReader.k8sNodeName
-            k8sDeploymentName = this@AttributesReader.k8sDeploymentName
-        }
-    }
 }

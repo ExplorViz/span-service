@@ -10,10 +10,10 @@ object DefaultAttributeValues {
     const val DEFAULT_APP_NAME = "UNKNOWN-APPLICATION"
     const val DEFAULT_APP_INSTANCE_ID = "0"
     const val DEFAULT_APP_LANG = "UNKNOWN"
+    const val DEFAULT_FILE_PATH = ""
     const val DEFAULT_PACKAGE_NAME = "unknownpkg"
     const val DEFAULT_CLASS_NAME = "UnknownClass"
 
-    // FQN must adhere to the format <pkg.Class.method>, i.e., include at least two '.'
     const val DEFAULT_CLASS_FQN = "$DEFAULT_PACKAGE_NAME.$DEFAULT_CLASS_NAME"
     const val DEFAULT_METHOD = "unknownMethod"
     const val DEFAULT_FQN = "$DEFAULT_CLASS_FQN.$DEFAULT_METHOD"

@@ -25,6 +25,8 @@ repositories {
 dependencies {
   implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
 
+  implementation("io.quarkus:quarkus-vertx-http")
+
   implementation 'io.quarkus:quarkus-container-image-jib'
 
   implementation "io.quarkus:quarkus-kotlin"
@@ -33,35 +35,22 @@ dependencies {
   // Needed for scheduled jobs
   implementation 'io.quarkus:quarkus-scheduler'
 
-  implementation "io.quarkus:quarkus-grpc"
-
   implementation "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha"
-
-  // Quarkus Cassandra Platform + DataStax Cassandra Driver
-  implementation enforcedPlatform("${quarkusPlatformGroupId}:quarkus-cassandra-bom:${quarkusPlatformVersion}")
-  implementation 'com.datastax.oss.quarkus:cassandra-quarkus-client'
 
   // Kafka Streams + Confluent Schema Registry + Avro (de)serializer
   implementation 'io.quarkus:quarkus-kafka-streams'
   implementation 'io.quarkus:quarkus-confluent-registry-avro'
   implementation group: 'io.confluent', name: 'kafka-streams-avro-serde', version: "${confluentAvroSerdeVersion}"
+  implementation 'io.quarkus:quarkus-messaging-kafka'
 
   //implementation("org.jboss.slf4j:slf4j-jboss-logmanager")
   //testImplementation("org.jboss.slf4j:slf4j-jboss-logmanager")
   //integrationTestImplementation("org.jboss.slf4j:slf4j-jboss-logmanager")
 
-  // REST implementation (Jackson serialization) + MicroProfile OpenAPI specification
-  implementation 'io.quarkus:quarkus-rest-jackson'
-  implementation 'io.quarkus:quarkus-smallrye-openapi'
-
   testImplementation 'io.quarkus:quarkus-junit5'
   testImplementation 'io.quarkus:quarkus-junit5-mockito'
 
   // Integration / Api Tests
-  testImplementation 'io.rest-assured:rest-assured'
-  integrationTestImplementation 'io.rest-assured:rest-assured'
-  testImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
-  integrationTestImplementation 'com.datastax.oss.quarkus:cassandra-quarkus-test-framework'
   testImplementation "org.testcontainers:kafka:1.17.5"
   testImplementation group: "org.apache.kafka", name: "kafka-streams-test-utils", version: "3.3.1"
   integrationTestImplementation "org.testcontainers:kafka:1.17.5"
@@ -94,6 +83,12 @@ java {
 // Tasks Setups //
 
 sourceSets {
+  main {
+    java {
+      srcDirs 'build/classes/java/quarkus-generated-sources/grpc'
+    }
+  }
+
   integrationTest {
     java.srcDir file('src/integrationTest/java')
     compileClasspath += sourceSets.main.output
@@ -178,7 +173,6 @@ test {
 
 // Needed by Mockito since closed Kotlin classes cannot be mocked
 allOpen {
-  annotation("jakarta.ws.rs.Path")
   annotation("jakarta.enterprise.context.ApplicationScoped")
   annotation("jakarta.persistence.Entity")
   annotation("io.quarkus.test.junit.QuarkusTest")
@@ -187,4 +181,20 @@ allOpen {
 integrationTest {
   useJUnitPlatform()
   testLogging.showStandardStreams = true
+}
+
+def registerGitHook = { String taskName, String hookFile, String targetHook ->
+  tasks.register(taskName, Copy) {
+    from("code-analysis/${hookFile}")
+    into(".git/hooks")
+    rename { targetHook }
+  }
+}
+
+registerGitHook("registerPreCommitHook", "pre-commit", "pre-commit")
+registerGitHook("registerPreMergeCommitHook", "pre-commit", "pre-merge-commit")
+
+tasks.named("quarkusGenerateCode") {
+  dependsOn("registerPreCommitHook")
+  dependsOn("registerPreMergeCommitHook")
 }

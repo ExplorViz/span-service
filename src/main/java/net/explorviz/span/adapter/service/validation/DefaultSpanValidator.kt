@@ -3,6 +3,7 @@ package net.explorviz.span.adapter.span.service.validation
 import io.opentelemetry.proto.trace.v1.Span
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import java.nio.file.Paths
 import java.time.DateTimeException
 import net.explorviz.span.adapter.service.converter.AttributesReader
 import net.explorviz.span.adapter.service.TokenService
@@ -13,29 +14,31 @@ import org.slf4j.LoggerFactory
 
 @ApplicationScoped
 class DefaultSpanValidator
-@Inject
-constructor(
+@Inject constructor(
     private val tokenService: TokenService,
     @ConfigProperty(name = "explorviz.validate.token-existence") var validateTokens: Boolean = false
 ) : SpanValidator {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DefaultSpanValidator::class.java)
-        private const val MIN_DEPTH_FQN_NAME = 3
+        private const val MIN_DEPTH_FQN_NAME = 2 // Method FQN must at least include class / file if no file path is set
     }
 
     override fun isValid(span: Span): Boolean {
         val attr = AttributesReader(span)
-
         return validateTimestamp(span.startTimeUnixNano) && validateTimestamp(span.endTimeUnixNano) && isValid(attr)
     }
 
     fun isValid(spanAttributes: AttributesReader): Boolean {
-        return validateToken(spanAttributes.landscapeToken, spanAttributes.secret) &&
-            validateHost(spanAttributes.hostName, spanAttributes.hostIpAddress) &&
-            validateApp(spanAttributes.applicationName, spanAttributes.applicationLanguage) &&
-            validateOperation(spanAttributes.methodFqn) &&
-            validateK8s(spanAttributes)
+        return validateToken(
+            spanAttributes.landscapeToken,
+            spanAttributes.secret,
+        ) && validateHost(
+            spanAttributes.hostName,
+            spanAttributes.hostIpAddress,
+        ) && validateApp(spanAttributes.applicationName, spanAttributes.applicationLanguage) && validateOperation(
+            spanAttributes.methodFqn, spanAttributes.filePath,
+        ) && validateK8s(spanAttributes)
     }
 
     private fun validateToken(token: String?, givenSecret: String?): Boolean {
@@ -103,16 +106,39 @@ constructor(
         return isValid
     }
 
-    private fun validateOperation(fqn: String): Boolean {
+    private fun validateOperation(fqn: String, filePath: String): Boolean {
+        // Despite OTel semconv, absolute file paths are not desirable as we don't know where the application begins
+        val filePathIsValid =
+            filePath.isNotBlank() && runCatching { Paths.get(filePath).isAbsolute }.getOrDefault(false)
+
         val operationFqnSplit = fqn.split(".")
-        if (operationFqnSplit.size < MIN_DEPTH_FQN_NAME) {
-            LOGGER.trace("Invalid span: Invalid operation name: {}", fqn)
-            return false
+
+        if (filePathIsValid) {
+            if (operationFqnSplit.last().isBlank()) {
+                LOGGER.trace("Invalid span: Invalid operation name {}", fqn)
+                return false
+            }
+            return true
+        } else {
+            if (operationFqnSplit.size < MIN_DEPTH_FQN_NAME) {
+                LOGGER.trace(
+                    "Invalid span: Operation name \"{}\" too short with invalid file path given: \"{}\"",
+                    fqn,
+                    filePath,
+                )
+                return false
+            }
+            if (operationFqnSplit.any { it.isBlank() }) {
+                LOGGER.trace(
+                    "Invalid span: Operation name \"{}\" contains empty segments with invalid file path given: \"{}\"",
+                    fqn,
+                    filePath,
+                )
+                return false
+            }
         }
 
-        return operationFqnSplit[0].isNotBlank() &&
-            operationFqnSplit[1].isNotBlank() &&
-            operationFqnSplit[2].isNotBlank()
+        return true
     }
 
     private fun validateK8s(spanAttributes: AttributesReader): Boolean {

@@ -15,7 +15,6 @@ import net.explorviz.avro.TokenEvent
 import net.explorviz.span.adapter.service.validation.SpanValidator
 import net.explorviz.span.persistence.PersistenceSpan
 import net.explorviz.span.persistence.PersistenceSpanProcessor
-import net.explorviz.span.persistence.SpanConverter
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Bytes
 import org.apache.kafka.streams.KeyValue
@@ -59,10 +58,6 @@ class TopologyProducer {
     @Inject lateinit var spanConverter: SpanConverterImpl
 
     @Inject
-    lateinit var persistenceSpanConverter: SpanConverter
-
-
-    @Inject
     lateinit var persistenceProcessor: PersistenceSpanProcessor
 
 
@@ -100,18 +95,11 @@ class TopologyProducer {
                 }
             }
 
-        // Convert to Span Structure
-        val explorvizSpanStream: KStream<String, net.explorviz.avro.Span> =
+        val persistenceStream: KStream<String, PersistenceSpan> =
             validSpanStream.map { _, value ->
                 val span = spanConverter.fromOpenTelemetrySpan(value)
-                KeyValue(span.landscapeToken, span)
+                KeyValue(span.landscapeToken.toString(), span)
             }
-
-        // Map to our more space-efficient PersistenceSpan format
-        // ToDo: Combine with previous step
-        val persistenceStream: KStream<String, PersistenceSpan> = explorvizSpanStream.mapValues(
-            this.persistenceSpanConverter,
-        )
 
         persistenceStream.foreach { _ : String?, span: PersistenceSpan? ->
             persistenceProcessor.accept(

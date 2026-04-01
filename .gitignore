@@ -304,3 +304,7 @@ gradle-app.setting
 
 # Quarkus
 .quarkus
+
+# Kotlin
+.kotlin
+

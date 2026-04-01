@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "Running pre-commit hook"
+
+./gradlew checkstyleMain pmdMain test
+if [ $? -ne 0 ]; then
+  echo "Pre-commit hook failed"
+  exit 1
+fi
+
+echo "Pre-commit hook passed"
+exit 0
