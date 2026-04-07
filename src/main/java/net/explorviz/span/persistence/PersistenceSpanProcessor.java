@@ -4,7 +4,6 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -22,7 +21,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   private final AtomicLong lastExportedSpans = new AtomicLong(0L);
   private final AtomicLong lastFailures = new AtomicLong(0L);
 
-  private final ConcurrentMap<UUID, Set<String>> knownSpanIdsByLandscape =
+  private final ConcurrentMap<String, Set<String>> knownSpanIdsByLandscape =
       new ConcurrentHashMap<>(1);
 
   @Inject
@@ -31,7 +30,7 @@ public class PersistenceSpanProcessor implements Consumer<PersistenceSpan> {
   @Override
   public void accept(final PersistenceSpan span) {
     final Set<String> knownSpanIds = knownSpanIdsByLandscape.computeIfAbsent(span.landscapeToken(),
-        uuid -> ConcurrentHashMap.newKeySet());
+        tokenValue  -> ConcurrentHashMap.newKeySet());
     if (knownSpanIds.add(span.spanId())) {
       exporter.persistSpan(span);
       lastExportedSpans.incrementAndGet();

@@ -49,15 +49,7 @@ class SpanConverterImpl : SpanConverter<PersistenceSpan> {
         val k8sNamespace = attributesReader.k8sNamespace
         val k8sDeploymentName = attributesReader.k8sDeploymentName
 
-        val landscapeToken = when (attributesReader.landscapeToken) {
-            "mytokenvalue" -> PersistenceSpan.DEFAULT_UUID
-            else -> runCatching { UUID.fromString(attributesReader.landscapeToken) }.onFailure {
-                LOGGER.error(
-                    "Invalid landscape token: {}",
-                    attributesReader.landscapeToken,
-                )
-            }.getOrDefault(PersistenceSpan.DEFAULT_UUID)
-        }
+        val landscapeToken = attributesReader.landscapeToken;
 
         val parentSpanId = if (ocSpan.parentSpanId.size() > 0) {
             IdHelper.convertSpanId(ocSpan.parentSpanId.toByteArray())

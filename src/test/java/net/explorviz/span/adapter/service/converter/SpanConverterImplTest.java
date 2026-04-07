@@ -23,7 +23,7 @@ public class SpanConverterImplTest {
             ByteString.copyFrom(HexFormat.of().parseHex("50c246ad9c9883d1558df9f19b9ae7a6")))
         .setSpanId(ByteString.copyFrom(HexFormat.of().parseHex("7ef83c66eabd5fbb")))
         .setParentSpanId(ByteString.copyFrom(HexFormat.of().parseHex("7ef83c66efe42aaa")))
-        .addAttributes(stringAttr("explorviz.token.id", PersistenceSpan.DEFAULT_UUID.toString()))
+        .addAttributes(stringAttr("explorviz.token.id", DefaultAttributeValues.DEFAULT_LANDSCAPE_TOKEN))
         .addAttributes(stringAttr("git_commit_checksum", "gitchecksum"))
         .addAttributes(stringAttr("host_address", "1.2.3.4"))
         .addAttributes(stringAttr("host", "testhostname"))
@@ -48,7 +48,7 @@ public class SpanConverterImplTest {
   }
 
   private PersistenceSpan resultSpan() {
-    return new PersistenceSpan(PersistenceSpan.DEFAULT_UUID,
+    return new PersistenceSpan(DefaultAttributeValues.DEFAULT_LANDSCAPE_TOKEN,
         "gitchecksum",
         "7ef83c66eabd5fbb",
         "7ef83c66efe42aaa",
