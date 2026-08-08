@@ -21,7 +21,8 @@ type SpanPair struct {
 	ChildSpanID  string `json:"childSpanId"`
 }
 
-// A CommSpans is used for exchanging detailed span information on the spans from which a particular communication was derived.
+// A CommSpans is used for exchanging detailed span information
+// on the spans from which a particular communication was derived.
 type CommSpans struct {
 	// Maps the ID of a span to the detailed span information.
 	Spans map[string]Span `json:"spans"`
@@ -30,8 +31,9 @@ type CommSpans struct {
 	Pairs []SpanPair `json:"pairs"`
 }
 
-// A spanRequest represents a pair of visualization objects for which span information should be retrieved.
-type spanRequest struct {
+// A commSpansRequest represents a pair of visualization objects for which
+// detailed information of spans involved in their communication should be retrieved.
+type commSpansRequest struct {
 	SourceVizObjectId string `json:"source"`
 	TargetVizObjectId string `json:"target"`
 }
