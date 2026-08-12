@@ -19,6 +19,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/ExplorViz/trace-service/internal/communication"
+	"github.com/ExplorViz/trace-service/internal/function"
 	"github.com/ExplorViz/trace-service/internal/timestamp"
 	"github.com/ExplorViz/trace-service/internal/trace"
 )
@@ -57,6 +58,14 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	commRepo := communication.Repository{Conn: conn}
+	commHandler := communication.NewHandler(commRepo)
+	commHandler.Register(mux)
+
+	funcRepo := function.Repository{Conn: conn}
+	funcHandler := function.NewHandler(funcRepo)
+	funcHandler.Register(mux)
+
 	timestampRepo := timestamp.Repository{Conn: conn}
 	timestampHandler := timestamp.NewHandler(timestampRepo)
 	timestampHandler.Register(mux)
@@ -64,10 +73,6 @@ func main() {
 	traceRepo := trace.Repository{Conn: conn}
 	traceHandler := trace.NewHandler(traceRepo)
 	traceHandler.Register(mux)
-
-	commRepo := communication.Repository{Conn: conn}
-	commHandler := communication.NewHandler(commRepo)
-	commHandler.Register(mux)
 
 	srv := &http.Server{Addr: ":" + strconv.Itoa(*httpPort), Handler: corsHandler(addContentTypeJSON(mux))}
 

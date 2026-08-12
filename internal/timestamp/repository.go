@@ -8,8 +8,7 @@ import (
 )
 
 type Repository struct {
-	Conn  driver.Conn
-	Table string
+	Conn driver.Conn
 }
 
 // findTimestamps searches the database for points in time at which spans belonging to the landscape identified by landscapeToken start.

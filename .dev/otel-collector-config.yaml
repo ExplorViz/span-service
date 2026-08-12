@@ -1,0 +1,34 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: :55678
+
+processors:
+  explorviz_parsing:
+    validate_tokens: false
+  attributes/add_default_landscape_token:
+    actions:
+      - key: explorviz.token.id
+        value: "mytokenvalue"
+        action: insert
+      - key: explorviz.token.secret
+        value: "mytokensecret"
+        action: insert
+
+exporters:
+  clickhouse:
+    endpoint: tcp://clickhouse:9000
+    create_schema: false
+
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [explorviz_parsing]
+      exporters:
+        - clickhouse
+        - debug

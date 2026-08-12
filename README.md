@@ -14,6 +14,7 @@ For development instructions, continue reading below. If you just want to run Ex
 - A code editor, such as [Visual Studio Code](https://code.visualstudio.com/)
 - Make sure to run the [ExplorViz software stack](https://github.com/ExplorViz/deployment)
   before starting the service, as it provides the required database(s) and the Collector instance
+    - As an alternative, a small Docker compose stack is available in the [.dev](./.dev) directory of this repository
 
 ### Running the service
 
@@ -25,15 +26,13 @@ go run . [OPTIONS]
 
 To see a list of command-line options, use the `--help` flag. These options can also be configured via environment variables, where the name of the environment variable corresponds to the long flag name, prefixed by `EXPLORVIZ_` and with all separators replaced by underscores; for example, the `--log-level` flag corresponds to the `EXPLORVIZ_LOG_LEVEL` environment variable. Note that directly passing flags takes precedence over environment variables. If neither the flag nor the environment variable is set, then the default value indicated by `--help` is used.
 
-### Building an executable
+### Debugging Queries
 
-To build an executable from the project, use:
+To debug queries against the ClickHouse database, you can use the Web SQL UI, reachable at http://localhost:8123 by default. If you prefer working with a CLI, you can install [clickhousectl](https://clickhouse.com/docs/concepts/features/interfaces/cli) and connect to the database like this:
 
 ```shell
-go build
+chctl local client --host localhost --port 19000
 ```
-
-By default, the executable will be placed in the root directory under the name `trace-service`. You can optionally specify the path of the resulting binary using the `-o <your-executable-name>` flag.
 
 ### Testing
 
