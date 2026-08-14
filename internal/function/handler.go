@@ -28,17 +28,19 @@ func (h *Handler) getFuncs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	from, err := strconv.ParseUint(r.URL.Query().Get("from"), 10, 64)
+	query := r.URL.Query()
+
+	from, err := strconv.ParseUint(query.Get("from"), 10, 64)
 	if err != nil {
 		from = 0
 	}
 
-	to, err := strconv.ParseUint(r.URL.Query().Get("to"), 10, 64)
+	to, err := strconv.ParseUint(query.Get("to"), 10, 64)
 	if err != nil {
 		to = math.MaxUint64
 	}
 
-	commit := r.URL.Query().Get("commit")
+	commit := query.Get("commit")
 
 	var freqs []funcRequest
 	if err := json.NewDecoder(r.Body).Decode(&freqs); err != nil {

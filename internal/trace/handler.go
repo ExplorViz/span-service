@@ -37,24 +37,26 @@ func (h *Handler) getEntitySpans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	from, err := strconv.ParseUint(r.URL.Query().Get("from"), 10, 64)
+	query := r.URL.Query()
+
+	from, err := strconv.ParseUint(query.Get("from"), 10, 64)
 	if err != nil {
 		from = 0
 	}
 
-	to, err := strconv.ParseUint(r.URL.Query().Get("to"), 10, 64)
+	to, err := strconv.ParseUint(query.Get("to"), 10, 64)
 	if err != nil {
 		to = math.MaxUint64
 	}
 
-	commit := r.URL.Query().Get("commit")
+	commit := query.Get("commit")
 
-	limit, err := strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+	limit, err := strconv.ParseUint(query.Get("limit"), 10, 64)
 	if err != nil {
 		limit = 0
 	}
 
-	offset, err := strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+	offset, err := strconv.ParseUint(query.Get("offset"), 10, 64)
 	if err != nil {
 		offset = 0
 	}
@@ -78,24 +80,26 @@ func (h *Handler) getCommunicationSpans(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	from, err := strconv.ParseUint(r.URL.Query().Get("from"), 10, 64)
+	query := r.URL.Query()
+
+	from, err := strconv.ParseUint(query.Get("from"), 10, 64)
 	if err != nil {
 		from = 0
 	}
 
-	to, err := strconv.ParseUint(r.URL.Query().Get("to"), 10, 64)
+	to, err := strconv.ParseUint(query.Get("to"), 10, 64)
 	if err != nil {
 		to = math.MaxUint64
 	}
 
-	commit := r.URL.Query().Get("commit")
+	commit := query.Get("commit")
 
-	limit, err := strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+	limit, err := strconv.ParseUint(query.Get("limit"), 10, 64)
 	if err != nil {
 		limit = 0
 	}
 
-	offset, err := strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+	offset, err := strconv.ParseUint(query.Get("offset"), 10, 64)
 	if err != nil {
 		offset = 0
 	}
