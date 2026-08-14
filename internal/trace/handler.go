@@ -19,7 +19,7 @@ func NewHandler(r Repository) Handler {
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /v3/landscapes/{landscapeToken}/entities/{vizObjectId}/spans", h.getEntitySpans)
+	mux.HandleFunc("GET /v3/landscapes/{landscapeToken}/entities/{telemetryKey}/spans", h.getEntitySpans)
 	mux.HandleFunc("POST /v3/landscapes/{landscapeToken}/communication/spans", h.getCommunicationSpans)
 	mux.HandleFunc("DELETE /v3/landscapes/{landscapeToken}/trace-data", h.deleteTraceData)
 }
@@ -31,8 +31,8 @@ func (h *Handler) getEntitySpans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vizObjectID := r.PathValue("vizObjectId")
-	if vizObjectID == "" {
+	telemetryKey := r.PathValue("telemetryKey")
+	if telemetryKey == "" {
 		http.Error(w, "Missing or invalid visualization object ID in path parameter", http.StatusBadRequest)
 		return
 	}
@@ -62,7 +62,7 @@ func (h *Handler) getEntitySpans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var s []Span
-	if s, err = h.repo.findEntitySpans(r.Context(), lt, vizObjectID, from, to, commit, limit, offset); err != nil {
+	if s, err = h.repo.findEntitySpans(r.Context(), lt, telemetryKey, from, to, commit, limit, offset); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -111,7 +111,7 @@ func (h *Handler) getCommunicationSpans(w http.ResponseWriter, r *http.Request) 
 	}
 
 	for _, sreq := range sreqs {
-		if sreq.SourceVizObjectId == "" || sreq.TargetVizObjectId == "" {
+		if sreq.SourceTelemetryKey == "" || sreq.TargetTelemetryKey == "" {
 			http.Error(w, "A request object is missing source or target visualization object ID", http.StatusBadRequest)
 			return
 		}

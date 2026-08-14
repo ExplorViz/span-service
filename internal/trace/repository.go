@@ -17,11 +17,11 @@ type Repository struct {
 // the commitHash value can be used. If left empty, then the search is explicitly restricted to spans that have no associated commit. A limit and an
 // offset can optionally be specified for pagination.
 func (r *Repository) findEntitySpans(
-	ctx context.Context, landscapeToken string, vizObjectID string, fromUnixNano uint64, toUnixNano uint64, commitHash string, limit uint64, offset uint64,
+	ctx context.Context, landscapeToken string, telemetryKey string, fromUnixNano uint64, toUnixNano uint64, commitHash string, limit uint64, offset uint64,
 ) ([]Span, error) {
 	params := []any{
 		clickhouse.Named("landscapeToken", landscapeToken),
-		clickhouse.Named("vizObjectId", vizObjectID),
+		clickhouse.Named("telemetryKey", telemetryKey),
 		clickhouse.Named("from", fromUnixNano),
 		clickhouse.Named("to", toUnixNano),
 		clickhouse.Named("commit", commitHash),
@@ -51,7 +51,7 @@ func (r *Repository) findEntitySpans(
 		FROM otel_traces
 		WHERE
 			ExplorvizTokenId = @landscapeToken
-			AND ExplorvizVizObjectId = @vizObjectId
+			AND ExplorvizTelemetryKey = @telemetryKey
 			AND Timestamp_ns >= @from
 			AND Timestamp_ns <= @to
 			AND coalesce(SpanAttributes['vcs.ref.head.revision'], '') = @commit
@@ -75,8 +75,8 @@ func (r *Repository) findCommunicationSpans(
 	comms := make([]clickhouse.GroupSet, len(sreqs))
 	for i, sreq := range sreqs {
 		comms[i] = clickhouse.GroupSet{Value: []any{
-			min(sreq.SourceVizObjectId, sreq.TargetVizObjectId),
-			max(sreq.SourceVizObjectId, sreq.TargetVizObjectId),
+			min(sreq.SourceTelemetryKey, sreq.TargetTelemetryKey),
+			max(sreq.SourceTelemetryKey, sreq.TargetTelemetryKey),
 		}}
 	}
 
@@ -126,8 +126,8 @@ func (r *Repository) findCommunicationSpans(
 			WHERE
 				c.ExplorvizTokenId = @landscapeToken
 				AND (
-					least(c.ExplorvizVizObjectId, p.ExplorvizVizObjectId),
-					greatest(c.ExplorvizVizObjectId, p.ExplorvizVizObjectId)
+					least(c.ExplorvizTelemetryKey, p.ExplorvizTelemetryKey),
+					greatest(c.ExplorvizTelemetryKey, p.ExplorvizTelemetryKey)
 				) IN (@comms)
 				AND c.Timestamp_ns >= @from
 				AND c.Timestamp_ns <= @to

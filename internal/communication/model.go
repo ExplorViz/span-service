@@ -11,10 +11,10 @@ type MetricRange struct {
 // A communication is inferred when a span produced by the source visualization object acts as the parent of a child span produced by the target object.
 // Each unique source-target pair is represented by a single Comm instance, regardless of how many such span pairs exist.
 type Comm struct {
-	ID                string `json:"id"`
-	Name              string `json:"name"`
-	SourceVizObjectId string `json:"sourceEntityKey"`
-	TargetVizObjectId string `json:"targetEntityKey"`
+	ID                 string `json:"id"`
+	Name               string `json:"name"`
+	SourceTelemetryKey string `json:"sourceEntityKey"`
+	TargetTelemetryKey string `json:"targetEntityKey"`
 
 	// A Comm is considered bidirectional if communication in both directions is observed, meaning there exists
 	// at least one span pair where the source entity's span is the parent of the span produced by the target entity,
