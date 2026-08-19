@@ -22,8 +22,8 @@ func (r Repository) findCommFunctions(
 	comms := make([]clickhouse.GroupSet, len(freqs))
 	for i, freq := range freqs {
 		comms[i] = clickhouse.GroupSet{Value: []any{
-			min(freq.SourceVizObjectId, freq.TargetVizObjectId),
-			max(freq.SourceVizObjectId, freq.TargetVizObjectId),
+			min(freq.SourceTelemetryKey, freq.TargetTelemetryKey),
+			max(freq.SourceTelemetryKey, freq.TargetTelemetryKey),
 		}}
 	}
 
@@ -41,7 +41,7 @@ func (r Repository) findCommFunctions(
 		SELECT
 			c.ExplorvizEntityId AS ID,
 			c.ExplorvizFuncName AS FuncName,
-			(p.ExplorvizVizObjectId, c.ExplorvizVizObjectId) IN (@comms) AS IsForward,
+			(p.ExplorvizTelemetryKey, c.ExplorvizTelemetryKey) IN (@comms) AS IsForward,
 			count() AS CallCount,
 			sum(Duration) AS ExecutionTime
 		FROM otel_traces c
@@ -51,13 +51,13 @@ func (r Repository) findCommFunctions(
 		WHERE
 			c.ExplorvizTokenId = @landscapeToken
 			AND (
-				(c.ExplorvizVizObjectId, p.ExplorvizVizObjectId) IN (@comms)
-				OR (p.ExplorvizVizObjectId, c.ExplorvizVizObjectId) IN (@comms)
+				(c.ExplorvizTelemetryKey, p.ExplorvizTelemetryKey) IN (@comms)
+				OR (p.ExplorvizTelemetryKey, c.ExplorvizTelemetryKey) IN (@comms)
 			)
 			AND c.Timestamp_ns >= @from
 			AND c.Timestamp_ns <= @to
 			AND coalesce(c.SpanAttributes['vcs.ref.head.revision'], '') = @commit
-		GROUP BY c.ExplorvizEntityId, c.ExplorvizVizObjectId, p.ExplorvizVizObjectId, c.ExplorvizFuncName;
+		GROUP BY c.ExplorvizEntityId, c.ExplorvizTelemetryKey, p.ExplorvizTelemetryKey, c.ExplorvizFuncName;
 	`, params...)
 	if err != nil {
 		return []FunctionCall{}, err

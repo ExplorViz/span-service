@@ -19,7 +19,7 @@ func NewHandler(r Repository) Handler {
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /v3/landscapes/{landscapeToken}/entities/{vizObjectId}/spans", h.getEntitySpans)
+	mux.HandleFunc("GET /v3/landscapes/{landscapeToken}/entities/{telemetryKey}/spans", h.getEntitySpans)
 	mux.HandleFunc("POST /v3/landscapes/{landscapeToken}/communication/spans", h.getCommunicationSpans)
 	mux.HandleFunc("DELETE /v3/landscapes/{landscapeToken}/trace-data", h.deleteTraceData)
 }
@@ -31,36 +31,38 @@ func (h *Handler) getEntitySpans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vizObjectID := r.PathValue("vizObjectId")
-	if vizObjectID == "" {
+	telemetryKey := r.PathValue("telemetryKey")
+	if telemetryKey == "" {
 		http.Error(w, "Missing or invalid visualization object ID in path parameter", http.StatusBadRequest)
 		return
 	}
 
-	from, err := strconv.ParseUint(r.URL.Query().Get("from"), 10, 64)
+	query := r.URL.Query()
+
+	from, err := strconv.ParseUint(query.Get("from"), 10, 64)
 	if err != nil {
 		from = 0
 	}
 
-	to, err := strconv.ParseUint(r.URL.Query().Get("to"), 10, 64)
+	to, err := strconv.ParseUint(query.Get("to"), 10, 64)
 	if err != nil {
 		to = math.MaxUint64
 	}
 
-	commit := r.URL.Query().Get("commit")
+	commit := query.Get("commit")
 
-	limit, err := strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+	limit, err := strconv.ParseUint(query.Get("limit"), 10, 64)
 	if err != nil {
 		limit = 0
 	}
 
-	offset, err := strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+	offset, err := strconv.ParseUint(query.Get("offset"), 10, 64)
 	if err != nil {
 		offset = 0
 	}
 
 	var s []Span
-	if s, err = h.repo.findEntitySpans(r.Context(), lt, vizObjectID, from, to, commit, limit, offset); err != nil {
+	if s, err = h.repo.findEntitySpans(r.Context(), lt, telemetryKey, from, to, commit, limit, offset); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -78,24 +80,26 @@ func (h *Handler) getCommunicationSpans(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	from, err := strconv.ParseUint(r.URL.Query().Get("from"), 10, 64)
+	query := r.URL.Query()
+
+	from, err := strconv.ParseUint(query.Get("from"), 10, 64)
 	if err != nil {
 		from = 0
 	}
 
-	to, err := strconv.ParseUint(r.URL.Query().Get("to"), 10, 64)
+	to, err := strconv.ParseUint(query.Get("to"), 10, 64)
 	if err != nil {
 		to = math.MaxUint64
 	}
 
-	commit := r.URL.Query().Get("commit")
+	commit := query.Get("commit")
 
-	limit, err := strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+	limit, err := strconv.ParseUint(query.Get("limit"), 10, 64)
 	if err != nil {
 		limit = 0
 	}
 
-	offset, err := strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+	offset, err := strconv.ParseUint(query.Get("offset"), 10, 64)
 	if err != nil {
 		offset = 0
 	}
@@ -107,7 +111,7 @@ func (h *Handler) getCommunicationSpans(w http.ResponseWriter, r *http.Request) 
 	}
 
 	for _, sreq := range sreqs {
-		if sreq.SourceVizObjectId == "" || sreq.TargetVizObjectId == "" {
+		if sreq.SourceTelemetryKey == "" || sreq.TargetTelemetryKey == "" {
 			http.Error(w, "A request object is missing source or target visualization object ID", http.StatusBadRequest)
 			return
 		}

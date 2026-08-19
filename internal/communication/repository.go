@@ -34,8 +34,8 @@ func (r *Repository) findCommunication(
 		// Find communications and aggregate metrics
 		WITH comms AS (
 			SELECT
-				p.ExplorvizVizObjectId AS SourceVizObjectId,
-				c.ExplorvizVizObjectId AS TargetVizObjectId,
+				p.ExplorvizTelemetryKey AS SourceTelemetryKey,
+				c.ExplorvizTelemetryKey AS TargetTelemetryKey,
 				toFloat64(COUNT(c.SpanId)) AS RequestCount,
 				toFloat64(COUNT(DISTINCT c.ExplorvizFuncName)) AS FunctionCount,
 				toFloat64(sum(c.Duration)) AS ExecutionTime,
@@ -51,14 +51,14 @@ func (r *Repository) findCommunication(
 				AND c.Timestamp_ns < @to
 				AND coalesce(c.SpanAttributes['vcs.ref.head.revision'], '') = @commit
 			GROUP BY
-				c.ExplorvizVizObjectId, p.ExplorvizVizObjectId
+				c.ExplorvizTelemetryKey, p.ExplorvizTelemetryKey
 		)
 
 		// Combine backwards and forwards calls into bidirectional communication
 		SELECT
-			a.SourceVizObjectId AS SourceVizObjectId,
-			a.TargetVizObjectId AS TargetVizObjectId,
-			b.SourceVizObjectId != '' AS Bidirectional,
+			a.SourceTelemetryKey AS SourceTelemetryKey,
+			a.TargetTelemetryKey AS TargetTelemetryKey,
+			b.SourceTelemetryKey != '' AS Bidirectional,
 			least(a.FromUnixNano, coalesce(nullIf(b.FromUnixNano, 0), a.FromUnixNano)) AS FromUnixNano,
 			greatest(a.ToUnixNano, coalesce(nullIf(b.ToUnixNano, 0), a.ToUnixNano)) AS ToUnixNano,
 			map (
@@ -68,11 +68,11 @@ func (r *Repository) findCommunication(
 			) AS Metrics
 		FROM comms a
 		LEFT JOIN comms b
-			ON a.SourceVizObjectId = b.TargetVizObjectId
-			AND a.TargetVizObjectId = b.SourceVizObjectId
+			ON a.SourceTelemetryKey = b.TargetTelemetryKey
+			AND a.TargetTelemetryKey = b.SourceTelemetryKey
 		WHERE
-			a.SourceVizObjectId <= a.TargetVizObjectId
-			OR b.SourceVizObjectId = '';
+			a.SourceTelemetryKey <= a.TargetTelemetryKey
+			OR b.SourceTelemetryKey = '';
 	`, params...)
 	if err != nil {
 		return CommSummary{}, err
@@ -91,8 +91,8 @@ func (r *Repository) findCommunication(
 	var to int64 = math.MinInt64
 	ms := make(map[string]MetricRange)
 	for i, c := range cs {
-		cs[i].ID = c.SourceVizObjectId + "-" + c.TargetVizObjectId
-		cs[i].Name = c.SourceVizObjectId + " - " + c.TargetVizObjectId
+		cs[i].ID = c.SourceTelemetryKey + "-" + c.TargetTelemetryKey
+		cs[i].Name = c.SourceTelemetryKey + " - " + c.TargetTelemetryKey
 		from = min(cs[i].FromUnixNano, from)
 		to = max(cs[i].ToUnixNano, to)
 		for k, v := range c.Metrics {

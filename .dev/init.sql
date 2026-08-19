@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS otel_traces (
     -- Materialized columns for ExplorViz
     Timestamp_ns Int64 MATERIALIZED toUnixTimestamp64Nano(Timestamp),
     ExplorvizEntityId String MATERIALIZED SpanAttributes['explorviz.entity.id'],
-    ExplorvizVizObjectId String MATERIALIZED SpanAttributes['explorviz.vizobject.id'],
+    ExplorvizTelemetryKey String MATERIALIZED SpanAttributes['explorviz.entity.telemetrykey'],
     ExplorvizTokenId String MATERIALIZED SpanAttributes['explorviz.token.id'],
     ExplorvizFuncName String MATERIALIZED SpanAttributes['explorviz.code.function.name'],
 

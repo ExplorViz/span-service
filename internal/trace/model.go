@@ -34,6 +34,6 @@ type CommSpans struct {
 // A commSpansRequest represents a pair of visualization objects for which
 // detailed information of spans involved in their communication should be retrieved.
 type commSpansRequest struct {
-	SourceVizObjectId string `json:"source"`
-	TargetVizObjectId string `json:"target"`
+	SourceTelemetryKey string `json:"source"`
+	TargetTelemetryKey string `json:"target"`
 }
